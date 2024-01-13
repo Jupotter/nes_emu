@@ -53,6 +53,14 @@ public class Cpu
         new(0xA2, "LDX", 2, 2, AddressingMode.Immediate),
         //LDY
         new(0xA0, "LDY", 2, 2, AddressingMode.Immediate),
+        // STA
+        new(0x85, "STA", 2, 3, AddressingMode.ZeroPage),
+        new(0x95, "STA", 2, 4, AddressingMode.ZeroPage_X),
+        new(0x8D, "STA", 3, 4, AddressingMode.Absolute),
+        new(0x9D, "STA", 3, 5, AddressingMode.Absolute_X),
+        new(0x99, "STA", 3, 5, AddressingMode.Absolute_Y),
+        new(0x81, "STA", 2, 6, AddressingMode.Indirect_X),
+        new(0x91, "STA", 2, 6, AddressingMode.Indirect_Y),
     }.ToDictionary(x => x.Opcode);
 
     private byte registerA = 0;
@@ -121,6 +129,8 @@ PC: {PC}";
                 case "LDY":
                     LDY(opcode.AddressingMode);
                     break;
+                case "STA":
+                    STA(opcode.AddressingMode);
                     break;
                 case "TAX":
                     TAX();
@@ -165,6 +175,12 @@ PC: {PC}";
 
         registerY = param;
         UpdateZeroAndNegativeFlags(registerY);
+    }
+    
+    private void STA(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        MemWriteByte(address, RegisterA);
     }
 
     private void TAX()
