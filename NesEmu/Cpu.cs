@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NesEmu;
 
 [Flags]
@@ -13,6 +15,7 @@ public enum CpuFlags : byte
     Negative = 64,
 }
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum AddressingMode
 {
     Immediate,
@@ -24,16 +27,35 @@ public enum AddressingMode
     Absolute_Y,
     Indirect_X,
     Indirect_Y,
-    NoneAddressing,
+    NoAddressing,
 }
 
 public class Cpu
 {
+    public record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode);
+
+    public static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
+    {
+        new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing),
+        new(0xE8, "INX", 1, 2, AddressingMode.NoAddressing),
+        new(0xAA, "TAX", 1, 2, AddressingMode.NoAddressing),
+        new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing),
+        // LDA
+        new(0xA9, "LDA", 2, 2, AddressingMode.Immediate),
+        new(0xA5, "LDA", 2, 3, AddressingMode.ZeroPage),
+        new(0xB5, "LDA", 2, 4, AddressingMode.ZeroPage_X),
+        new(0xAD, "LDA", 3, 4, AddressingMode.Absolute),
+        new(0xBD, "LDA", 3, 4, AddressingMode.Absolute_X),
+        new(0xB9, "LDA", 3, 4, AddressingMode.Absolute_Y),
+        new(0xA1, "LDA", 2, 6, AddressingMode.Indirect_X),
+        new(0xB1, "LDA", 2, 5, AddressingMode.Indirect_Y),
+    }.ToDictionary(x => x.Opcode);
+
     private byte registerA = 0;
     private byte registerX = 0;
     private byte registerY = 0;
     private CpuFlags status = CpuFlags.None;
-    private ushort program_counter = 0;
+    private ushort programCounter = 0;
 
     private readonly byte[] memory = new byte[0xffff];
 
@@ -43,7 +65,7 @@ public class Cpu
     public byte RegisterX => registerX;
     public byte RegisterY => registerY;
     public CpuFlags Status => status;
-    public ushort PC => program_counter;
+    public ushort PC => programCounter;
 
     public override string ToString()
     {
@@ -73,63 +95,38 @@ PC: {PC}";
         registerY = 0;
         status = CpuFlags.None;
 
-        program_counter = MemReadShort(0xFFFC);
+        programCounter = MemReadShort(0xFFFC);
     }
 
     private void Run()
     {
         while (true)
         {
-            var opcode = MemReadByte(program_counter++);
+            var code = MemReadByte(programCounter++);
+            if (!Instructions.TryGetValue(code, out var opcode))
+                throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
 
-            switch (opcode)
+            switch (opcode.Name)
             {
-                case 0xA9:
-                    LDA(AddressingMode.Immediate);
-                    program_counter++;
+                case "LDA":
+                    LDA(opcode.AddressingMode);
                     break;
-                case 0xA5:
-                    LDA(AddressingMode.ZeroPage);
-                    program_counter += 1;
-                    break;
-                case 0xAD:
-                    LDA(AddressingMode.Absolute);
-                    program_counter += 2;
-                    break;
-                case 0xB5:
-                    LDA(AddressingMode.ZeroPage_X);
-                    program_counter += 1;
-                    break;
-                case 0xBD:
-                    LDA(AddressingMode.Absolute_X);
-                    program_counter += 2;
-                    break;
-                case 0xB9:
-                    LDA(AddressingMode.Absolute_Y);
-                    program_counter += 2;
-                    break;
-                case 0xA1:
-                    LDA(AddressingMode.Indirect_X);
-                    program_counter += 1;
-                    break;
-                case 0xB1:
-                    LDA(AddressingMode.Indirect_Y);
-                    program_counter += 1;
-                    break;
-                case 0xAA:
+                case "TAX":
                     TAX();
                     break;
-                case 0xA8:
+                case "TAY":
                     TAY();
                     break;
-                case 0xE8:
+                case "INX":
                     INX();
                     break;
-                case 0x00:
+                case "BRK":
                     return;
                 default:
-                    throw new NotImplementedException($"Instruction 0x{opcode:X} not implemented");
+                    throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
             }
+
+            programCounter += (ushort)(opcode.Bytes - 1);
         }
     }
 
@@ -211,18 +208,18 @@ PC: {PC}";
     {
         return mode switch
         {
-            AddressingMode.Immediate => program_counter,
-            AddressingMode.ZeroPage => MemReadByte(program_counter),
-            AddressingMode.Absolute => MemReadShort(program_counter),
-            AddressingMode.ZeroPage_X => (byte)(MemReadByte(program_counter) + registerX),
-            AddressingMode.ZeroPage_Y => (byte)(MemReadByte(program_counter) + registerY),
-            AddressingMode.Absolute_X => (ushort)(MemReadShort(program_counter) + registerX),
-            AddressingMode.Absolute_Y => (ushort)(MemReadShort(program_counter) + registerY),
+            AddressingMode.Immediate => programCounter,
+            AddressingMode.ZeroPage => MemReadByte(programCounter),
+            AddressingMode.Absolute => MemReadShort(programCounter),
+            AddressingMode.ZeroPage_X => (byte)(MemReadByte(programCounter) + registerX),
+            AddressingMode.ZeroPage_Y => (byte)(MemReadByte(programCounter) + registerY),
+            AddressingMode.Absolute_X => (ushort)(MemReadShort(programCounter) + registerX),
+            AddressingMode.Absolute_Y => (ushort)(MemReadShort(programCounter) + registerY),
             AddressingMode.Indirect_X
-                => MemReadShort((byte)(MemReadByte(program_counter) + registerX)),
+                => MemReadShort((byte)(MemReadByte(programCounter) + registerX)),
             AddressingMode.Indirect_Y
-                => (ushort)(MemReadShort(MemReadByte(program_counter)) + registerY),
-            AddressingMode.NoneAddressing
+                => (ushort)(MemReadShort(MemReadByte(programCounter)) + registerY),
+            AddressingMode.NoAddressing
                 => throw new InvalidOperationException($"Mode {mode} is not supported"),
             _ => throw new ArgumentOutOfRangeException(nameof(mode)),
         };
