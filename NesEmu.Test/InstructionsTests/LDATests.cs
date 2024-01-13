@@ -16,7 +16,7 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8003);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 
     [Theory]
@@ -42,7 +42,7 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8003);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 
     [Theory]
@@ -60,7 +60,7 @@ public class LDATests
     [InlineData(0x05, 0xff, 0x05, CpuFlags.None)]
     public void LDAZeroPageXTest(byte value, byte address, byte offset, CpuFlags expectedStatus)
     {
-        var program = new byte[] { 0xA9, offset, 0xAA, 0xB5, address };
+        var program = new byte[] { 0xA2, offset, 0xB5, address };
         var tested = new Cpu();
         tested.MemWriteByte((byte)(address + offset), value);
 
@@ -68,7 +68,7 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8006);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 
     [Theory]
@@ -84,6 +84,7 @@ public class LDATests
     [InlineData(0x05, 0x0, CpuFlags.None)]
     [InlineData(0x05, 0x0101, CpuFlags.None)]
     [InlineData(0x05, 0x02ff, CpuFlags.None)]
+    [InlineData(0xAD, 0x8000, CpuFlags.Negative)]
     public void LDAAbsoluteTest(byte value, ushort address, CpuFlags expectedStatus)
     {
         var program = new byte[] { 0xAD, (byte)address, (byte)(address >> 8) };
@@ -94,7 +95,7 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8004);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 
     [Theory]
@@ -110,9 +111,10 @@ public class LDATests
     [InlineData(0x05, 0x0300, 0x05, CpuFlags.None)]
     [InlineData(0x05, 0x0301, 0x05, CpuFlags.None)]
     [InlineData(0x05, 0x03ff, 0x05, CpuFlags.None)]
+    [InlineData(0xBD, 0x8000, 0x02, CpuFlags.Negative)]
     public void LDAAbsoluteXTest(byte value, ushort address, byte offset, CpuFlags expectedStatus)
     {
-        var program = new byte[] { 0xA9, offset, 0xAA, 0xBD, (byte)address, (byte)(address >> 8) };
+        var program = new byte[] { 0xA2, offset, 0xBD, (byte)address, (byte)(address >> 8) };
         var tested = new Cpu();
         tested.MemWriteByte((ushort)(address + offset), value);
 
@@ -120,7 +122,7 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8007);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 
     [Theory]
@@ -138,7 +140,7 @@ public class LDATests
     [InlineData(0x05, 0x03ff, 0x05, CpuFlags.None)]
     public void LDAAbsoluteYTest(byte value, ushort address, byte offset, CpuFlags expectedStatus)
     {
-        var program = new byte[] { 0xA9, offset, 0xA8, 0xB9, (byte)address, (byte)(address >> 8) };
+        var program = new byte[] { 0xA0, offset, 0xB9, (byte)address, (byte)(address >> 8) };
         var tested = new Cpu();
         tested.MemWriteByte((ushort)(address + offset), value);
 
@@ -146,7 +148,7 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8007);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 
     [Theory]
@@ -161,7 +163,7 @@ public class LDATests
     [InlineData(0xFF, 0x03ff, 0x05, CpuFlags.Negative)]
     public void LDAIndirectXTest(byte value, ushort address, byte offset, CpuFlags expectedStatus)
     {
-        var program = new byte[] { 0xA9, offset, 0xAA, 0xA1, (byte)address };
+        var program = new byte[] { 0xA2, offset, 0xA1, (byte)address };
         var tested = new Cpu();
         tested.MemWriteShort((byte)((byte)address + offset), 0x605);
         tested.MemWriteByte(0x605, value);
@@ -170,7 +172,7 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8006);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 
     [Theory]
@@ -185,7 +187,7 @@ public class LDATests
     [InlineData(0xFF, 0xff, 0x05, CpuFlags.Negative)]
     public void LDAIndirectYTest(byte value, ushort address, byte offset, CpuFlags expectedStatus)
     {
-        var program = new byte[] { 0xA9, offset, 0xA8, 0xB1, (byte)address };
+        var program = new byte[] { 0xA0, offset, 0xB1, (byte)address };
         var tested = new Cpu();
         tested.MemWriteShort(address, 0x605);
         tested.MemWriteByte((ushort)(0x605+offset), value);
@@ -194,6 +196,6 @@ public class LDATests
 
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be(0x8006);
+        tested.PC.Should().Be((ushort)(0x8001+program.Length));
     }
 }

@@ -49,6 +49,10 @@ public class Cpu
         new(0xB9, "LDA", 3, 4, AddressingMode.Absolute_Y),
         new(0xA1, "LDA", 2, 6, AddressingMode.Indirect_X),
         new(0xB1, "LDA", 2, 5, AddressingMode.Indirect_Y),
+        //LDX
+        new(0xA2, "LDX", 2, 2, AddressingMode.Immediate),
+        //LDY
+        new(0xA0, "LDY", 2, 2, AddressingMode.Immediate),
     }.ToDictionary(x => x.Opcode);
 
     private byte registerA = 0;
@@ -57,7 +61,7 @@ public class Cpu
     private CpuFlags status = CpuFlags.None;
     private ushort programCounter = 0;
 
-    private readonly byte[] memory = new byte[0xffff];
+    private readonly byte[] memory = new byte[0x10000];
 
     private Span<byte> Rom => memory.AsSpan()[0x8000..];
 
@@ -110,6 +114,13 @@ PC: {PC}";
             {
                 case "LDA":
                     LDA(opcode.AddressingMode);
+                    break;                
+                case "LDX":
+                    LDX(opcode.AddressingMode);
+                    break;                
+                case "LDY":
+                    LDY(opcode.AddressingMode);
+                    break;
                     break;
                 case "TAX":
                     TAX();
@@ -137,6 +148,23 @@ PC: {PC}";
 
         registerA = param;
         UpdateZeroAndNegativeFlags(registerA);
+    }
+    
+    private void LDX(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        registerX = param;
+        UpdateZeroAndNegativeFlags(registerX);
+    }
+    private void LDY(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        registerY = param;
+        UpdateZeroAndNegativeFlags(registerY);
     }
 
     private void TAX()
