@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
 
 namespace NesEmu;
 
@@ -33,8 +32,6 @@ public enum AddressingMode
 
 public class Cpu
 {
-    public record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode);
-
     public static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
     {
         new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing),
@@ -75,13 +72,13 @@ public class Cpu
         new(0x91, "STA", 2, 6, AddressingMode.Indirect_Y),
     }.ToDictionary(x => x.Opcode);
 
-    private byte registerA = 0;
-    private byte registerX = 0;
-    private byte registerY = 0;
-    private CpuFlags status = CpuFlags.None;
-    private ushort programCounter = 0;
-
     private readonly byte[] memory = new byte[0x10000];
+    private ushort programCounter;
+
+    private byte registerA;
+    private byte registerX;
+    private byte registerY;
+    private CpuFlags status = CpuFlags.None;
 
     private Span<byte> Rom => memory.AsSpan()[0x8000..];
 
@@ -128,7 +125,9 @@ PC: {PC}";
         {
             var code = MemReadByte(programCounter++);
             if (!Instructions.TryGetValue(code, out var opcode))
+            {
                 throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
+            }
 
             switch (opcode.Name)
             {
@@ -174,11 +173,15 @@ PC: {PC}";
         var address = GetOperandAddress(mode);
         var param = MemReadByte(address);
 
-        var result = RegisterA + param + (TestFlag(CpuFlags.Carry)? 1: 0);
+        var result = RegisterA + param + (TestFlag(CpuFlags.Carry) ? 1 : 0);
         if (result > byte.MaxValue)
+        {
             SetFlag(CpuFlags.Carry);
+        }
         else
+        {
             ResetFlag(CpuFlags.Carry);
+        }
 
         registerA = (byte)result;
         UpdateZeroAndNegativeFlags(registerA);
@@ -260,7 +263,7 @@ PC: {PC}";
         status |= flag;
         return status;
     }
-    
+
     public CpuFlags ResetFlag(CpuFlags flag)
     {
         status &= ~flag;
@@ -329,4 +332,6 @@ PC: {PC}";
     {
         registerY = value;
     }
+
+    public record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode);
 }

@@ -9,7 +9,10 @@ public class ADCTests
 
         carry = resultInt > byte.MaxValue;
         var expectedStatus = Utils.GetExpectedFlag(result);
-        if (carry) expectedStatus |= CpuFlags.Carry;
+        if (carry)
+        {
+            expectedStatus |= CpuFlags.Carry;
+        }
 
         return (result, expectedStatus);
     }

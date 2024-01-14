@@ -30,7 +30,7 @@ public class OtherInstructionsTests
         tested.RegisterY.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
     }
-    
+
     [Test]
     public void INXTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value)
     {
@@ -44,7 +44,7 @@ public class OtherInstructionsTests
         tested.RegisterX.Should().Be((byte)(value + 1));
         tested.Status.Should().Be(expectedStatus);
     }
-    
+
     [Test]
     public void SECTest()
     {

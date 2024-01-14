@@ -76,11 +76,12 @@ public class STATests
 
     [Test]
     public void STAIndirectXTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte address,
-        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte offset)
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte offset)
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x81, address };
         var tested = new Cpu();
-        tested.MemWriteShort((byte)((byte)address + offset), 0x605);
+        tested.MemWriteShort((byte)(address + offset), 0x605);
 
         tested.Interpret(program);
 
