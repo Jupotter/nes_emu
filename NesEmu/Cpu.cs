@@ -51,8 +51,16 @@ public class Cpu
         new(0xB1, "LDA", 2, 5, AddressingMode.Indirect_Y),
         //LDX
         new(0xA2, "LDX", 2, 2, AddressingMode.Immediate),
+        new(0xA6, "LDX", 2, 3, AddressingMode.ZeroPage),
+        new(0xB6, "LDX", 2, 4, AddressingMode.ZeroPage_Y),
+        new(0xAE, "LDX", 3, 4, AddressingMode.Absolute),
+        new(0xBE, "LDX", 3, 4, AddressingMode.Absolute_Y),
         //LDY
         new(0xA0, "LDY", 2, 2, AddressingMode.Immediate),
+        new(0xA4, "LDY", 2, 3, AddressingMode.ZeroPage),
+        new(0xB4, "LDY", 2, 4, AddressingMode.ZeroPage_X),
+        new(0xAC, "LDY", 3, 4, AddressingMode.Absolute),
+        new(0xBC, "LDY", 3, 4, AddressingMode.Absolute_X),
         // STA
         new(0x85, "STA", 2, 3, AddressingMode.ZeroPage),
         new(0x95, "STA", 2, 4, AddressingMode.ZeroPage_X),
