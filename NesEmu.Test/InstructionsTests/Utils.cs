@@ -1,6 +1,6 @@
 namespace NesEmu.Test.InstructionsTests;
 
-public class DataGenerator
+public class Utils
 {
     public static readonly byte[] TestBytes = [0x00, 0x01, 0x05, 0x80, 0xff];
     
@@ -16,5 +16,10 @@ public class DataGenerator
             0x00 => CpuFlags.Zero,
             _ => CpuFlags.None,
         };
+    }
+
+    public static ushort ExpectedPc(byte[] program)
+    {
+        return (ushort)(0x8001 + program.Length);
     }
 }

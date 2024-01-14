@@ -4,7 +4,7 @@ namespace NesEmu.Test.InstructionsTests;
 public class STATests
 {
     [Test]
-    public void STAZeroPageTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte address)
+    public void STAZeroPageTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte address)
     {
         var program = new byte[] { 0xA9, 0xDE, 0x85, address };
         var tested = new Cpu();
@@ -12,13 +12,13 @@ public class STATests
         tested.Interpret(program);
 
         tested.MemReadByte(address).Should().Be(0xDE);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void STAZeroPageXTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void STAZeroPageXTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x95, address };
@@ -27,12 +27,12 @@ public class STATests
         tested.Interpret(program);
 
         tested.MemReadByte((byte)(address + offset)).Should().Be(0xDE);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void STAAbsoluteTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestWords))] ushort address)
+    public void STAAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address)
     {
         var program = new byte[] { 0xA9, 0xDE, 0x8D, (byte)address, (byte)(address >> 8) };
         var tested = new Cpu();
@@ -40,13 +40,13 @@ public class STATests
         tested.Interpret(program);
 
         tested.MemReadByte(address).Should().Be(0xDE);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void STAAbsoluteXTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestWords))] ushort address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void STAAbsoluteXTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x9D, (byte)address, (byte)(address >> 8) };
@@ -55,13 +55,13 @@ public class STATests
         tested.Interpret(program);
 
         tested.MemReadByte((ushort)(address + offset)).Should().Be(0xDE);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void STAAbsoluteYTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestWords))] ushort address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void STAAbsoluteYTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
         var program = new byte[] { 0xA0, offset, 0xA9, 0xDE, 0x99, (byte)address, (byte)(address >> 8) };
@@ -70,13 +70,13 @@ public class STATests
         tested.Interpret(program);
 
         tested.MemReadByte((ushort)(address + offset)).Should().Be(0xDE);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void STAIndirectXTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte offset)
+    public void STAIndirectXTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte offset)
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x81, address };
         var tested = new Cpu();
@@ -85,13 +85,13 @@ public class STATests
         tested.Interpret(program);
 
         tested.MemReadByte(0x605).Should().Be(0xDE);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void STAIndirectYTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void STAIndirectYTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
         var program = new byte[] { 0xA0, offset, 0xA9, 0xDE, 0x91, address };
@@ -101,6 +101,6 @@ public class STATests
         tested.Interpret(program);
 
         tested.MemReadByte((ushort)(0x605 + offset)).Should().Be(0xDE);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 }

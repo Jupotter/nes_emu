@@ -4,9 +4,9 @@ namespace NesEmu.Test.InstructionsTests;
 public class LDXTests
 {
     [Test]
-    public void LDXImmTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value)
+    public void LDXImmTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, value };
         var tested = new Cpu();
 
@@ -14,16 +14,16 @@ public class LDXTests
 
         tested.RegisterX.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void LDXZeroPageTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void LDXZeroPageTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte address)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA6, address };
         var tested = new Cpu();
         tested.MemWriteByte(address, value);
@@ -32,18 +32,18 @@ public class LDXTests
 
         tested.RegisterX.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void LDXZeroPageYTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void LDXZeroPageYTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, offset, 0xB6, address };
         var tested = new Cpu();
         tested.MemWriteByte((byte)(address + offset), value);
@@ -52,16 +52,16 @@ public class LDXTests
 
         tested.RegisterX.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void LDXAbsoluteTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestWords))]
+    public void LDXAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestWords))]
         ushort address)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xAE, (byte)address, (byte)(address >> 8) };
         var tested = new Cpu();
         tested.MemWriteByte(address, value);
@@ -70,18 +70,18 @@ public class LDXTests
 
         tested.RegisterX.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
 
     [Test]
-    public void LDXAbsoluteYTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestWords))]
+    public void LDXAbsoluteYTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestWords))]
         ushort address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, offset, 0xBE, (byte)address, (byte)(address >> 8) };
         var tested = new Cpu();
         tested.MemWriteByte((ushort)(address + offset), value);
@@ -90,7 +90,7 @@ public class LDXTests
 
         tested.RegisterX.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 }
 
@@ -98,9 +98,9 @@ public class LDXTests
 public class LDYTests
 {
     [Test]
-    public void LDYImmTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value)
+    public void LDYImmTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, value };
         var tested = new Cpu();
 
@@ -108,15 +108,15 @@ public class LDYTests
 
         tested.RegisterY.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
     [Test]
-    public void LDYZeroPageTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void LDYZeroPageTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte address)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA4, address };
         var tested = new Cpu();
         tested.MemWriteByte(address, value);
@@ -125,17 +125,17 @@ public class LDYTests
 
         tested.RegisterY.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
     [Test]
-    public void LDYZeroPageXTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+    public void LDYZeroPageXTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, offset, 0xB4, address };
         var tested = new Cpu();
         tested.MemWriteByte((byte)(address + offset), value);
@@ -144,15 +144,15 @@ public class LDYTests
 
         tested.RegisterY.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
     [TestCase(0xAC, (ushort)0x8000)]
-    public void LDYAbsoluteTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestWords))]
+    public void LDYAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestWords))]
         ushort address)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xAC, (byte)address, (byte)(address >> 8) };
         var tested = new Cpu();
         tested.MemWriteByte(address, value);
@@ -161,17 +161,17 @@ public class LDYTests
 
         tested.RegisterY.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 
     [TestCase(0xBC, (ushort)0x8000, 0x02)]
-    public void LDYAbsoluteXTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestWords))]
+    public void LDYAbsoluteXTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value,
+        [ValueSource(typeof(Utils), nameof(Utils.TestWords))]
         ushort address,
-        [ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))]
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
         byte offset)
     {
-        var expectedStatus = DataGenerator.GetExpectedFlag(value);
+        var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, offset, 0xBC, (byte)address, (byte)(address >> 8) };
         var tested = new Cpu();
         tested.MemWriteByte((ushort)(address + offset), value);
@@ -180,6 +180,6 @@ public class LDYTests
 
         tested.RegisterY.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
-        tested.PC.Should().Be((ushort)(0x8001 + program.Length));
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 
 namespace NesEmu;
 
@@ -40,6 +41,9 @@ public class Cpu
         new(0xE8, "INX", 1, 2, AddressingMode.NoAddressing),
         new(0xAA, "TAX", 1, 2, AddressingMode.NoAddressing),
         new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing),
+        new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing),
+        // ADC
+        new(0x69, "ADC", 2, 2, AddressingMode.Immediate),
         // LDA
         new(0xA9, "LDA", 2, 2, AddressingMode.Immediate),
         new(0xA5, "LDA", 2, 3, AddressingMode.ZeroPage),
@@ -128,12 +132,15 @@ PC: {PC}";
 
             switch (opcode.Name)
             {
+                case "ADC":
+                    ADC(opcode.AddressingMode);
+                    break;
                 case "LDA":
                     LDA(opcode.AddressingMode);
-                    break;                
+                    break;
                 case "LDX":
                     LDX(opcode.AddressingMode);
-                    break;                
+                    break;
                 case "LDY":
                     LDY(opcode.AddressingMode);
                     break;
@@ -149,6 +156,9 @@ PC: {PC}";
                 case "INX":
                     INX();
                     break;
+                case "SEC":
+                    SetFlag(CpuFlags.Carry);
+                    break;
                 case "BRK":
                     return;
                 default:
@@ -159,6 +169,21 @@ PC: {PC}";
         }
     }
 
+    private void ADC(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        var result = RegisterA + param + (TestFlag(CpuFlags.Carry)? 1: 0);
+        if (result > byte.MaxValue)
+            SetFlag(CpuFlags.Carry);
+        else
+            ResetFlag(CpuFlags.Carry);
+
+        registerA = (byte)result;
+        UpdateZeroAndNegativeFlags(registerA);
+    }
+
     private void LDA(AddressingMode mode)
     {
         var address = GetOperandAddress(mode);
@@ -167,7 +192,7 @@ PC: {PC}";
         registerA = param;
         UpdateZeroAndNegativeFlags(registerA);
     }
-    
+
     private void LDX(AddressingMode mode)
     {
         var address = GetOperandAddress(mode);
@@ -176,6 +201,7 @@ PC: {PC}";
         registerX = param;
         UpdateZeroAndNegativeFlags(registerX);
     }
+
     private void LDY(AddressingMode mode)
     {
         var address = GetOperandAddress(mode);
@@ -184,7 +210,7 @@ PC: {PC}";
         registerY = param;
         UpdateZeroAndNegativeFlags(registerY);
     }
-    
+
     private void STA(AddressingMode mode)
     {
         var address = GetOperandAddress(mode);
@@ -227,6 +253,23 @@ PC: {PC}";
         {
             status &= ~CpuFlags.Negative;
         }
+    }
+
+    public CpuFlags SetFlag(CpuFlags flag)
+    {
+        status |= flag;
+        return status;
+    }
+    
+    public CpuFlags ResetFlag(CpuFlags flag)
+    {
+        status &= ~flag;
+        return status;
+    }
+
+    public bool TestFlag(CpuFlags flag)
+    {
+        return (Status & flag) != 0;
     }
 
     public byte MemReadByte(ushort address)
