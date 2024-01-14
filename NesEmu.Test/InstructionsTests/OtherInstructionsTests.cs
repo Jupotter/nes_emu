@@ -1,14 +1,12 @@
 namespace NesEmu.Test.InstructionsTests;
 
+[TestFixture]
 public class OtherInstructionsTests
 {
-    [Theory]
-    [InlineData(0x00, CpuFlags.Zero)]
-    [InlineData(0x01, CpuFlags.None)]
-    [InlineData(0xFF, CpuFlags.Negative)]
-    [InlineData(0x05, CpuFlags.None)]
-    public void TAXTest(byte value, CpuFlags expectedStatus)
+    [Test]
+    public void TAXTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value)
     {
+        var expectedStatus = DataGenerator.GetExpectedFlag(value);
         var program = new byte[] { 0xA9, value, 0xAA };
         var tested = new Cpu();
 
@@ -19,13 +17,10 @@ public class OtherInstructionsTests
         tested.Status.Should().Be(expectedStatus);
     }
 
-    [Theory]
-    [InlineData(0x00, CpuFlags.Zero)]
-    [InlineData(0x01, CpuFlags.None)]
-    [InlineData(0xFF, CpuFlags.Negative)]
-    [InlineData(0x05, CpuFlags.None)]
-    public void TAYTest(byte value, CpuFlags expectedStatus)
+    [Test]
+    public void TAYTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value)
     {
+        var expectedStatus = DataGenerator.GetExpectedFlag(value);
         var program = new byte[] { 0xA9, value, 0xA8 };
         var tested = new Cpu();
 
@@ -36,13 +31,11 @@ public class OtherInstructionsTests
         tested.Status.Should().Be(expectedStatus);
     }
 
-    [Theory]
-    [InlineData(0xFF, CpuFlags.Zero)]
-    [InlineData(0x01, CpuFlags.None)]
-    [InlineData(0b01111111, CpuFlags.Negative)]
-    [InlineData(0x05, CpuFlags.None)]
-    public void INXTest(byte value, CpuFlags expectedStatus)
+
+    [Test]
+    public void INXTest([ValueSource(typeof(DataGenerator), nameof(DataGenerator.TestBytes))] byte value)
     {
+        var expectedStatus = DataGenerator.GetExpectedFlag((byte)(value + 1));
         var program = new byte[] { 0xA9, value, 0xAA, 0xE8 };
         var tested = new Cpu();
 
