@@ -34,73 +34,82 @@ public class Cpu
 {
     public static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
     {
-        new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing),
-        new(0xEA, "NOP", 1, 2, AddressingMode.NoAddressing),
+        new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing, (_,_) => {}),
+        new(0xEA, "NOP", 1, 2, AddressingMode.NoAddressing, (_,_) => {}),
         // ADC
-        new(0x69, "ADC", 2, 2, AddressingMode.Immediate),
-        new(0x65, "ADC", 2, 3, AddressingMode.ZeroPage),
-        new(0x75, "ADC", 2, 4, AddressingMode.ZeroPage_X),
-        new(0x6D, "ADC", 3, 4, AddressingMode.Absolute),
-        new(0x7D, "ADC", 3, 4, AddressingMode.Absolute_X),
-        new(0x79, "ADC", 3, 4, AddressingMode.Absolute_Y),
-        new(0x61, "ADC", 2, 6, AddressingMode.Indirect_X),
-        new(0x71, "ADC", 2, 5, AddressingMode.Indirect_Y),
+        new(0x69, "ADC", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.ADC(mode)),
+        new(0x65, "ADC", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.ADC(mode)),
+        new(0x75, "ADC", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ADC(mode)),
+        new(0x6D, "ADC", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.ADC(mode)),
+        new(0x7D, "ADC", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.ADC(mode)),
+        new(0x79, "ADC", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.ADC(mode)),
+        new(0x61, "ADC", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.ADC(mode)),
+        new(0x71, "ADC", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.ADC(mode)),
+        // AND
+        new(0x29, "AND", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.AND(mode)),
+        new(0x25, "AND", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.AND(mode)),
+        new(0x35, "AND", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.AND(mode)),
+        new(0x2D, "AND", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.AND(mode)),
+        new(0x3D, "AND", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.AND(mode)),
+        new(0x39, "AND", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.AND(mode)),
+        new(0x21, "AND", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.AND(mode)),
+        new(0x31, "AND", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.AND(mode)),
         // SBC
-        new(0xE9, "SBC", 2, 2, AddressingMode.Immediate),
-        new(0xE5, "SBC", 2, 3, AddressingMode.ZeroPage),
-        new(0xF5, "SBC", 2, 4, AddressingMode.ZeroPage_X),
-        new(0xED, "SBC", 3, 4, AddressingMode.Absolute),
-        new(0xFD, "SBC", 3, 4, AddressingMode.Absolute_X),
-        new(0xF9, "SBC", 3, 4, AddressingMode.Absolute_Y),
-        new(0xE1, "SBC", 2, 6, AddressingMode.Indirect_X),
-        new(0xF1, "SBC", 2, 5, AddressingMode.Indirect_Y),
+        new(0xE9, "SBC", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.SBC(mode)),
+        new(0xE5, "SBC", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.SBC(mode)),
+        new(0xF5, "SBC", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.SBC(mode)),
+        new(0xED, "SBC", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.SBC(mode)),
+        new(0xFD, "SBC", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.SBC(mode)),
+        new(0xF9, "SBC", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SBC(mode)),
+        new(0xE1, "SBC", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.SBC(mode)),
+        new(0xF1, "SBC", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SBC(mode)),
         // LDA
-        new(0xA9, "LDA", 2, 2, AddressingMode.Immediate),
-        new(0xA5, "LDA", 2, 3, AddressingMode.ZeroPage),
-        new(0xB5, "LDA", 2, 4, AddressingMode.ZeroPage_X),
-        new(0xAD, "LDA", 3, 4, AddressingMode.Absolute),
-        new(0xBD, "LDA", 3, 4, AddressingMode.Absolute_X),
-        new(0xB9, "LDA", 3, 4, AddressingMode.Absolute_Y),
-        new(0xA1, "LDA", 2, 6, AddressingMode.Indirect_X),
-        new(0xB1, "LDA", 2, 5, AddressingMode.Indirect_Y),
+        new(0xA9, "LDA", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.LDA(mode)),
+        new(0xA5, "LDA", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.LDA(mode)),
+        new(0xB5, "LDA", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.LDA(mode)),
+        new(0xAD, "LDA", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.LDA(mode)),
+        new(0xBD, "LDA", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.LDA(mode)),
+        new(0xB9, "LDA", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.LDA(mode)),
+        new(0xA1, "LDA", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.LDA(mode)),
+        new(0xB1, "LDA", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.LDA(mode)),
         //LDX
-        new(0xA2, "LDX", 2, 2, AddressingMode.Immediate),
-        new(0xA6, "LDX", 2, 3, AddressingMode.ZeroPage),
-        new(0xB6, "LDX", 2, 4, AddressingMode.ZeroPage_Y),
-        new(0xAE, "LDX", 3, 4, AddressingMode.Absolute),
-        new(0xBE, "LDX", 3, 4, AddressingMode.Absolute_Y),
+        new(0xA2, "LDX", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.LDX(mode)),
+        new(0xA6, "LDX", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.LDX(mode)),
+        new(0xB6, "LDX", 2, 4, AddressingMode.ZeroPage_Y, (cpu, mode) => cpu.LDX(mode)),
+        new(0xAE, "LDX", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.LDX(mode)),
+        new(0xBE, "LDX", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.LDX(mode)),
         //LDY
-        new(0xA0, "LDY", 2, 2, AddressingMode.Immediate),
-        new(0xA4, "LDY", 2, 3, AddressingMode.ZeroPage),
-        new(0xB4, "LDY", 2, 4, AddressingMode.ZeroPage_X),
-        new(0xAC, "LDY", 3, 4, AddressingMode.Absolute),
-        new(0xBC, "LDY", 3, 4, AddressingMode.Absolute_X),
+        new(0xA0, "LDY", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.LDY(mode)),
+        new(0xA4, "LDY", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.LDY(mode)),
+        new(0xB4, "LDY", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.LDY(mode)),
+        new(0xAC, "LDY", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.LDY(mode)),
+        new(0xBC, "LDY", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.LDY(mode)),
         // STA
-        new(0x85, "STA", 2, 3, AddressingMode.ZeroPage),
-        new(0x95, "STA", 2, 4, AddressingMode.ZeroPage_X),
-        new(0x8D, "STA", 3, 4, AddressingMode.Absolute),
-        new(0x9D, "STA", 3, 5, AddressingMode.Absolute_X),
-        new(0x99, "STA", 3, 5, AddressingMode.Absolute_Y),
-        new(0x81, "STA", 2, 6, AddressingMode.Indirect_X),
-        new(0x91, "STA", 2, 6, AddressingMode.Indirect_Y),
+        new(0x85, "STA", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.STA(mode)),
+        new(0x95, "STA", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.STA(mode)),
+        new(0x8D, "STA", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.STA(mode)),
+        new(0x9D, "STA", 3, 5, AddressingMode.Absolute_X, (cpu, mode) => cpu.STA(mode)),
+        new(0x99, "STA", 3, 5, AddressingMode.Absolute_Y, (cpu, mode) => cpu.STA(mode)),
+        new(0x81, "STA", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.STA(mode)),
+        new(0x91, "STA", 2, 6, AddressingMode.Indirect_Y, (cpu, mode) => cpu.STA(mode)),
         // Register Transfers
-        new(0xAA, "TAX", 1, 2, AddressingMode.NoAddressing),
-        new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing),
-        new(0x8A, "TXA", 1, 2, AddressingMode.NoAddressing),
-        new(0x98, "TYA", 1, 2, AddressingMode.NoAddressing),
+        new(0xAA, "TAX", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TAX()),
+        new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TAY()),
+        new(0x8A, "TXA", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TXA()),
+        new(0x98, "TYA", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TYA()),
         // Increment/Decrement
-        new(0xE8, "INX", 1, 2, AddressingMode.NoAddressing),
-        new(0xC8, "INY", 1, 2, AddressingMode.NoAddressing),
-        new(0xCA, "DEX", 1, 2, AddressingMode.NoAddressing),
-        new(0x88, "DEY", 1, 2, AddressingMode.NoAddressing),
+        new(0xE8, "INX", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.INX()),
+        new(0xC8, "INY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.INY()),
+        new(0xCA, "DEX", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.DEX()),
+        new(0x88, "DEY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.DEY()),
         // Status Flag Changes
-        new(0x18, "CLC", 1, 2, AddressingMode.NoAddressing),
-        new(0xD8, "CLD", 1, 2, AddressingMode.NoAddressing),
-        new(0x58, "CLI", 1, 2, AddressingMode.NoAddressing),
-        new(0xB8, "CLV", 1, 2, AddressingMode.NoAddressing),
-        new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing),
-        new(0xF8, "SED", 1, 2, AddressingMode.NoAddressing),
-        new(0x78, "SEI", 1, 2, AddressingMode.NoAddressing),
+        new(0x18, "CLC", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.ResetFlag(CpuFlags.Carry)),
+        new(0xD8, "CLD", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.ResetFlag(CpuFlags.DecimalMode)),
+        new(0x58, "CLI", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.ResetFlag(CpuFlags.InterruptDisable)),
+        new(0xB8, "CLV", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.ResetFlag(CpuFlags.Overflow)),
+        new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.SetFlag(CpuFlags.Carry)),
+        new(0xF8, "SED", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.SetFlag(CpuFlags.DecimalMode)),
+        new(0x78, "SEI", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.SetFlag(CpuFlags.InterruptDisable)),
     }.ToDictionary(x => x.Opcode);
 
     private readonly byte[] memory = new byte[0x10000];
@@ -162,78 +171,10 @@ public class Cpu
                 throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
             }
 
-            switch (opcode.Name)
-            {
-                case "ADC":
-                    ADC(opcode.AddressingMode);
-                    break;
-                case "SBC":
-                    SBC(opcode.AddressingMode);
-                    break;
-                case "LDA":
-                    LDA(opcode.AddressingMode);
-                    break;
-                case "LDX":
-                    LDX(opcode.AddressingMode);
-                    break;
-                case "LDY":
-                    LDY(opcode.AddressingMode);
-                    break;
-                case "STA":
-                    STA(opcode.AddressingMode);
-                    break;
-                case "TAX":
-                    TAX();
-                    break;
-                case "TAY":
-                    TAY();
-                    break;
-                case "TXA":
-                    TXA();
-                    break;
-                case "TYA":
-                    TYA();
-                    break;
-                case "INX":
-                    INX();
-                    break;
-                case "INY":
-                    INY();
-                    break;
-                case "DEX":
-                    DEX();
-                    break;
-                case "DEY":
-                    DEY();
-                    break;
-                case "CLC":
-                    ResetFlag(CpuFlags.Carry);
-                    break;
-                case "CLD":
-                    ResetFlag(CpuFlags.DecimalMode);
-                    break;
-                case "CLI":
-                    ResetFlag(CpuFlags.InterruptDisable);
-                    break;
-                case "CLV":
-                    ResetFlag(CpuFlags.Overflow);
-                    break;
-                case "SEC":
-                    SetFlag(CpuFlags.Carry);
-                    break;
-                case "SED":
-                    SetFlag(CpuFlags.DecimalMode);
-                    break;
-                case "SEI":
-                    SetFlag(CpuFlags.InterruptDisable);
-                    break;
-                case "NOP":
-                    break;
-                case "BRK":
-                    return;
-                default:
-                    throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
-            }
+            if (opcode.Name == "BRK")
+                return;
+
+            opcode.Action(this, opcode.AddressingMode);
 
             programCounter += (ushort)(opcode.Bytes - 1);
         }
@@ -259,6 +200,15 @@ public class Cpu
         UpdateFlags(CpuFlags.Overflow, hasOverflow != 0);
 
         registerA = (byte)result;
+        UpdateZeroAndNegativeFlags(registerA);
+    }
+
+    private void AND(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+        
+        registerA &= param;
         UpdateZeroAndNegativeFlags(registerA);
     }
 
@@ -436,5 +386,5 @@ public class Cpu
         registerY = value;
     }
 
-    public record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode);
+    public record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode, Action<Cpu, AddressingMode> Action);
 }
