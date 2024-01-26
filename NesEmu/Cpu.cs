@@ -35,9 +35,6 @@ public class Cpu
     public static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
     {
         new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing),
-        new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing),
-        new(0xF8, "SED", 1, 2, AddressingMode.NoAddressing),
-        new(0x78, "SEI", 1, 2, AddressingMode.NoAddressing),
         new(0xEA, "NOP", 1, 2, AddressingMode.NoAddressing),
         // ADC
         new(0x69, "ADC", 2, 2, AddressingMode.Immediate),
@@ -96,6 +93,14 @@ public class Cpu
         new(0xC8, "INY", 1, 2, AddressingMode.NoAddressing),
         new(0xCA, "DEX", 1, 2, AddressingMode.NoAddressing),
         new(0x88, "DEY", 1, 2, AddressingMode.NoAddressing),
+        // Status Flag Changes
+        new(0x18, "CLC", 1, 2, AddressingMode.NoAddressing),
+        new(0xD8, "CLD", 1, 2, AddressingMode.NoAddressing),
+        new(0x58, "CLI", 1, 2, AddressingMode.NoAddressing),
+        new(0xB8, "CLV", 1, 2, AddressingMode.NoAddressing),
+        new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing),
+        new(0xF8, "SED", 1, 2, AddressingMode.NoAddressing),
+        new(0x78, "SEI", 1, 2, AddressingMode.NoAddressing),
     }.ToDictionary(x => x.Opcode);
 
     private readonly byte[] memory = new byte[0x10000];
@@ -116,10 +121,12 @@ public class Cpu
 
     public override string ToString()
     {
-        return @$"Register A: {RegisterA}
-Register X: {RegisterX}
-Status: {Status}
-PC: {PC}";
+        return $"""
+                Register A: {RegisterA}
+                Register X: {RegisterX}
+                Status: {Status}
+                PC: {PC}
+                """;
     }
 
     public void Interpret(byte[] program)
@@ -198,6 +205,18 @@ PC: {PC}";
                     break;
                 case "DEY":
                     DEY();
+                    break;
+                case "CLC":
+                    ResetFlag(CpuFlags.Carry);
+                    break;
+                case "CLD":
+                    ResetFlag(CpuFlags.DecimalMode);
+                    break;
+                case "CLI":
+                    ResetFlag(CpuFlags.InterruptDisable);
+                    break;
+                case "CLV":
+                    ResetFlag(CpuFlags.Overflow);
                     break;
                 case "SEC":
                     SetFlag(CpuFlags.Carry);

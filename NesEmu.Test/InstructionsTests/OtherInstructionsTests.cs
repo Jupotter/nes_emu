@@ -112,14 +112,4 @@ public class OtherInstructionsTests
         tested.Status.Should().Be(expectedStatus);
     }
 
-    [Test]
-    public void SECTest()
-    {
-        var program = new byte[] { 0x38 };
-        var tested = new Cpu();
-
-        tested.Interpret(program);
-
-        tested.Status.Should().Be(CpuFlags.Carry);
-    }
 }
