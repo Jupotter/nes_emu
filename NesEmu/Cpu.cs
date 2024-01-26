@@ -41,6 +41,13 @@ public class Cpu
         new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing),
         // ADC
         new(0x69, "ADC", 2, 2, AddressingMode.Immediate),
+        new(0x65, "ADC", 2, 3, AddressingMode.ZeroPage),
+        new(0x75, "ADC", 2, 4, AddressingMode.ZeroPage_X),
+        new(0x6D, "ADC", 3, 4, AddressingMode.Absolute),
+        new(0x7D, "ADC", 3, 4, AddressingMode.Absolute_X),
+        new(0x79, "ADC", 3, 4, AddressingMode.Absolute_Y),
+        new(0x61, "ADC", 2, 6, AddressingMode.Indirect_X),
+        new(0x71, "ADC", 2, 5, AddressingMode.Indirect_Y),
         // LDA
         new(0xA9, "LDA", 2, 2, AddressingMode.Immediate),
         new(0xA5, "LDA", 2, 3, AddressingMode.ZeroPage),

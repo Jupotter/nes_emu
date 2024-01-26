@@ -48,4 +48,149 @@ public class ADCTests
         tested.Status.Should().Be(expectedStatus);
         tested.PC.Should().Be(Utils.ExpectedPc(program));
     }
+    
+    [Test]
+    public void ADCZeroPageTests([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte left,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte right,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte address)
+    {
+        var (result, expectedStatus) = GetExpectedResult(left, right);
+        var program = new byte[] { 0xA9, left, 0x65, address };
+        var tested = new Cpu();
+        tested.MemWriteByte(address, right);
+
+        tested.Interpret(program);
+
+        tested.RegisterA.Should().Be(result);
+        tested.Status.Should().Be(expectedStatus);
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
+    }
+    
+    [Test]
+    public void ADCZeroPageXTests([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte left,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte right,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte offset)
+    {
+        var (result, expectedStatus) = GetExpectedResult(left, right);
+        var program = new byte[] { 0xA2, offset, 0xA9, left, 0x75, address };
+        var tested = new Cpu();
+        tested.MemWriteByte((byte)(address + offset), right);
+
+        tested.Interpret(program);
+
+        tested.RegisterA.Should().Be(result);
+        tested.Status.Should().Be(expectedStatus);
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
+    }
+    
+    [Test]
+    public void ADCAbsoluteTests([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte left,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte right,
+        [ValueSource(typeof(Utils), nameof(Utils.TestWords))]
+        ushort address)
+    {
+        var (result, expectedStatus) = GetExpectedResult(left, right);
+        var program = new byte[] { 0xA9, left, 0x6D, (byte)address, (byte)(address >> 8) };
+        var tested = new Cpu();
+        tested.MemWriteByte(address, right);
+
+        tested.Interpret(program);
+
+        tested.RegisterA.Should().Be(result);
+        tested.Status.Should().Be(expectedStatus);
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
+    }
+    
+    [Test]
+    public void ADCAbsoluteXTests([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte left,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte right,
+        [ValueSource(typeof(Utils), nameof(Utils.TestWords))]
+        ushort address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte offset)
+    {
+        var (result, expectedStatus) = GetExpectedResult(left, right);
+        var program = new byte[] { 0xA2, offset, 0xA9, left, 0x7D,  (byte)address, (byte)(address >> 8) };
+        var tested = new Cpu();
+        tested.MemWriteByte((ushort)(address + offset), right);
+
+        tested.Interpret(program);
+
+        tested.RegisterA.Should().Be(result);
+        tested.Status.Should().Be(expectedStatus);
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
+    }
+    
+    [Test]
+    public void ADCAbsoluteYTests([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte left,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte right,
+        [ValueSource(typeof(Utils), nameof(Utils.TestWords))]
+        ushort address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte offset)
+    {
+        var (result, expectedStatus) = GetExpectedResult(left, right);
+        var program = new byte[] { 0xA0, offset, 0xA9, left, 0x79,  (byte)address, (byte)(address >> 8) };
+        var tested = new Cpu();
+        tested.MemWriteByte((ushort)(address + offset), right);
+
+        tested.Interpret(program);
+
+        tested.RegisterA.Should().Be(result);
+        tested.Status.Should().Be(expectedStatus);
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
+    }
+    
+    [Test]
+    public void ADCIndirectXTests([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte left,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte right,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte offset)
+    {
+        var (result, expectedStatus) = GetExpectedResult(left, right);
+        var program = new byte[] { 0xA2, offset, 0xA9, left, 0x61, address };
+        var tested = new Cpu();
+        tested.MemWriteShort((byte)(address + offset), 0x605);
+        tested.MemWriteByte(0x605, right);
+
+        tested.Interpret(program);
+
+        tested.RegisterA.Should().Be(result);
+        tested.Status.Should().Be(expectedStatus);
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
+    }
+    
+    [Test]
+    public void ADCIndirectYTests([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte left,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte right,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte address,
+        [ValueSource(typeof(Utils), nameof(Utils.TestBytes))]
+        byte offset)
+    {
+        var (result, expectedStatus) = GetExpectedResult(left, right);
+        var program = new byte[] { 0xA0, offset, 0xA9, left, 0x71, address };
+        var tested = new Cpu();
+        tested.MemWriteShort(address, 0x605);
+        tested.MemWriteByte((ushort)(0x605+offset), right);
+
+        tested.Interpret(program);
+
+        tested.RegisterA.Should().Be(result);
+        tested.Status.Should().Be(expectedStatus);
+        tested.PC.Should().Be(Utils.ExpectedPc(program));
+    }
 }
