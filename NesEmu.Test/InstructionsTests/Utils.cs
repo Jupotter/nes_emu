@@ -24,4 +24,9 @@ public class Utils
     {
         return (ushort)(0x8001 + program.Length);
     }
+
+    public static byte ByteSign(byte value)
+    {
+        return (byte)(value & 0x80);
+    }
 }

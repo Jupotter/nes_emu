@@ -48,6 +48,15 @@ public class Cpu
         new(0x79, "ADC", 3, 4, AddressingMode.Absolute_Y),
         new(0x61, "ADC", 2, 6, AddressingMode.Indirect_X),
         new(0x71, "ADC", 2, 5, AddressingMode.Indirect_Y),
+        // SBC
+        new(0xE9, "SBC", 2, 2, AddressingMode.Immediate),
+        new(0xE5, "SBC", 2, 3, AddressingMode.ZeroPage),
+        new(0xF5, "SBC", 2, 4, AddressingMode.ZeroPage_X),
+        new(0xED, "SBC", 3, 4, AddressingMode.Absolute),
+        new(0xFD, "SBC", 3, 4, AddressingMode.Absolute_X),
+        new(0xF9, "SBC", 3, 4, AddressingMode.Absolute_Y),
+        new(0xE1, "SBC", 2, 6, AddressingMode.Indirect_X),
+        new(0xF1, "SBC", 2, 5, AddressingMode.Indirect_Y),
         // LDA
         new(0xA9, "LDA", 2, 2, AddressingMode.Immediate),
         new(0xA5, "LDA", 2, 3, AddressingMode.ZeroPage),
@@ -141,6 +150,9 @@ PC: {PC}";
                 case "ADC":
                     ADC(opcode.AddressingMode);
                     break;
+                case "SBC":
+                    SBC(opcode.AddressingMode);
+                    break;
                 case "LDA":
                     LDA(opcode.AddressingMode);
                     break;
@@ -180,18 +192,30 @@ PC: {PC}";
         var address = GetOperandAddress(mode);
         var param = MemReadByte(address);
 
+        ADCImpl(param);
+    }
+
+    private void ADCImpl(byte param)
+    {
         var result = RegisterA + param + (TestFlag(CpuFlags.Carry) ? 1 : 0);
-        if (result > byte.MaxValue)
-        {
-            SetFlag(CpuFlags.Carry);
-        }
-        else
-        {
-            ResetFlag(CpuFlags.Carry);
-        }
+
+        UpdateFlags(CpuFlags.Carry, result > byte.MaxValue);
+
+        // Check if the sign of A and param are equal to the sign of the result
+        // https://stackoverflow.com/questions/29193303/6502-emulation-proper-way-to-implement-adc-and-sbc
+        var hasOverflow = ~(RegisterA ^ param) & (RegisterA ^ result) & 0x80;
+        UpdateFlags(CpuFlags.Overflow, hasOverflow != 0);
 
         registerA = (byte)result;
         UpdateZeroAndNegativeFlags(registerA);
+    }
+
+    private void SBC(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        ADCImpl((byte)~param);
     }
 
     private void LDA(AddressingMode mode)
@@ -247,24 +271,15 @@ PC: {PC}";
 
     private void UpdateZeroAndNegativeFlags(byte value)
     {
-        if (value == 0)
-        {
-            status |= CpuFlags.Zero;
-        }
-        else
-        {
-            status &= ~CpuFlags.Zero;
-        }
-        if ((sbyte)value < 0)
-        {
-            status |= CpuFlags.Negative;
-        }
-        else
-        {
-            status &= ~CpuFlags.Negative;
-        }
+        UpdateFlags(CpuFlags.Zero, value == 0);
+        UpdateFlags(CpuFlags.Negative, (sbyte)value < 0);
     }
 
+    public CpuFlags UpdateFlags(CpuFlags flag, bool value)
+    {
+        return value ? SetFlag(flag) : ResetFlag(flag);
+    }
+    
     public CpuFlags SetFlag(CpuFlags flag)
     {
         status |= flag;
