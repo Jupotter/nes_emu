@@ -35,10 +35,10 @@ public class Cpu
     public static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
     {
         new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing),
-        new(0xE8, "INX", 1, 2, AddressingMode.NoAddressing),
-        new(0xAA, "TAX", 1, 2, AddressingMode.NoAddressing),
-        new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing),
         new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing),
+        new(0xF8, "SED", 1, 2, AddressingMode.NoAddressing),
+        new(0x78, "SEI", 1, 2, AddressingMode.NoAddressing),
+        new(0xEA, "NOP", 1, 2, AddressingMode.NoAddressing),
         // ADC
         new(0x69, "ADC", 2, 2, AddressingMode.Immediate),
         new(0x65, "ADC", 2, 3, AddressingMode.ZeroPage),
@@ -86,6 +86,16 @@ public class Cpu
         new(0x99, "STA", 3, 5, AddressingMode.Absolute_Y),
         new(0x81, "STA", 2, 6, AddressingMode.Indirect_X),
         new(0x91, "STA", 2, 6, AddressingMode.Indirect_Y),
+        // Register Transfers
+        new(0xAA, "TAX", 1, 2, AddressingMode.NoAddressing),
+        new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing),
+        new(0x8A, "TXA", 1, 2, AddressingMode.NoAddressing),
+        new(0x98, "TYA", 1, 2, AddressingMode.NoAddressing),
+        // Increment/Decrement
+        new(0xE8, "INX", 1, 2, AddressingMode.NoAddressing),
+        new(0xC8, "INY", 1, 2, AddressingMode.NoAddressing),
+        new(0xCA, "DEX", 1, 2, AddressingMode.NoAddressing),
+        new(0x88, "DEY", 1, 2, AddressingMode.NoAddressing),
     }.ToDictionary(x => x.Opcode);
 
     private readonly byte[] memory = new byte[0x10000];
@@ -171,11 +181,34 @@ PC: {PC}";
                 case "TAY":
                     TAY();
                     break;
+                case "TXA":
+                    TXA();
+                    break;
+                case "TYA":
+                    TYA();
+                    break;
                 case "INX":
                     INX();
                     break;
+                case "INY":
+                    INY();
+                    break;
+                case "DEX":
+                    DEX();
+                    break;
+                case "DEY":
+                    DEY();
+                    break;
                 case "SEC":
                     SetFlag(CpuFlags.Carry);
+                    break;
+                case "SED":
+                    SetFlag(CpuFlags.DecimalMode);
+                    break;
+                case "SEI":
+                    SetFlag(CpuFlags.InterruptDisable);
+                    break;
+                case "NOP":
                     break;
                 case "BRK":
                     return;
@@ -263,10 +296,39 @@ PC: {PC}";
         UpdateZeroAndNegativeFlags(registerY);
     }
 
+    private void TXA()
+    {
+        registerA = registerX;
+        UpdateZeroAndNegativeFlags(registerA);
+    }
+    
+    private void TYA()
+    {
+        registerA = registerY;
+        UpdateZeroAndNegativeFlags(registerA);
+    }
+    
     private void INX()
     {
         registerX++;
         UpdateZeroAndNegativeFlags(registerX);
+    }
+    
+    private void INY()
+    {
+        registerY++;
+        UpdateZeroAndNegativeFlags(registerY);
+    }
+    private void DEX()
+    {
+        registerX--;
+        UpdateZeroAndNegativeFlags(registerX);
+    }
+    
+    private void DEY()
+    {
+        registerY--;
+        UpdateZeroAndNegativeFlags(registerY);
     }
 
     private void UpdateZeroAndNegativeFlags(byte value)
