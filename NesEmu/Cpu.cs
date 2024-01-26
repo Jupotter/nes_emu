@@ -11,8 +11,8 @@ public enum CpuFlags : byte
     InterruptDisable = 4,
     DecimalMode = 8,
     BreakCommand = 16,
-    Overflow = 32,
-    Negative = 64,
+    Overflow = 64,
+    Negative = 128,
 }
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
