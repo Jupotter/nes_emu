@@ -32,7 +32,7 @@ public enum AddressingMode
 
 public class Cpu
 {
-    public static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
+    private static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
     {
         new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing, (_,_) => {}),
         new(0xEA, "NOP", 1, 2, AddressingMode.NoAddressing, (_,_) => {}),
@@ -188,6 +188,14 @@ public class Cpu
         ADCImpl(param);
     }
 
+    private void SBC(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        ADCImpl((byte)~param);
+    }
+
     private void ADCImpl(byte param)
     {
         var result = RegisterA + param + (TestFlag(CpuFlags.Carry) ? 1 : 0);
@@ -210,14 +218,6 @@ public class Cpu
         
         registerA &= param;
         UpdateZeroAndNegativeFlags(registerA);
-    }
-
-    private void SBC(AddressingMode mode)
-    {
-        var address = GetOperandAddress(mode);
-        var param = MemReadByte(address);
-
-        ADCImpl((byte)~param);
     }
 
     private void LDA(AddressingMode mode)
@@ -386,5 +386,5 @@ public class Cpu
         registerY = value;
     }
 
-    public record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode, Action<Cpu, AddressingMode> Action);
+    private record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode, Action<Cpu, AddressingMode> Action);
 }
