@@ -180,13 +180,13 @@ public class Cpu
         Run();
     }
 
-    private void Load(byte[] rom)
+    public void Load(byte[] rom)
     {
         rom.AsSpan().CopyTo(Rom);
         MemWriteShort(0xfffc, 0x8000);
     }
 
-    private void Reset()
+    public void Reset()
     {
         registerA = 0;
         registerX = 0;
@@ -196,25 +196,32 @@ public class Cpu
         programCounter = MemReadShort(0xFFFC);
     }
 
-    private void Run()
+    public bool Step()
     {
-        while (true)
+        var code = MemReadByte(programCounter++);
+        var pcBefore = programCounter;
+        if (!Instructions.TryGetValue(code, out var opcode))
         {
-            var code = MemReadByte(programCounter++);
-            var pcBefore = programCounter;
-            if (!Instructions.TryGetValue(code, out var opcode))
-            {
-                throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
-            }
+            throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
+        }
 
-            if (opcode.Opcode == 0x00) // BRK
-                return;
+        if (opcode.Opcode == 0x00) // BRK
+            return true;
 
-            opcode.Action(this, opcode.AddressingMode);
+        opcode.Action(this, opcode.AddressingMode);
 
-            // check if we jumped during the action
-            if (programCounter == pcBefore)
-                programCounter += (ushort)(opcode.Bytes - 1);
+        // check if we jumped during the action
+        if (programCounter == pcBefore)
+            programCounter += (ushort)(opcode.Bytes - 1);
+        return false;
+    }
+    
+    public void Run()
+    {
+        var brk = false;
+        while (!brk)
+        {
+            brk = Step();
         }
     }
 
@@ -603,6 +610,7 @@ public class Cpu
         registerY = value;
     }
 
+    [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Local")]
     private record struct Instruction(
         byte Opcode,
         string Name,
