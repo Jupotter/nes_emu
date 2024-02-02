@@ -19,6 +19,7 @@ public enum CpuFlags : byte
 public enum AddressingMode
 {
     Immediate,
+    Relative = Immediate,
     ZeroPage,
     ZeroPage_X,
     ZeroPage_Y,
@@ -117,6 +118,15 @@ public class Cpu
         new(0x99, "STA", 3, 5, AddressingMode.Absolute_Y, (cpu, mode) => cpu.STA(mode)),
         new(0x81, "STA", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.STA(mode)),
         new(0x91, "STA", 2, 6, AddressingMode.Indirect_Y, (cpu, mode) => cpu.STA(mode)),
+        // Branch
+        new(0x90, "BCC", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BCC()),
+        new(0xB0, "BCS", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BCS()),
+        new(0xF0, "BEQ", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BEQ()),
+        new(0xD0, "BNE", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BNE()),
+        new(0x30, "BMI", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BMI()),
+        new(0x10, "BPL", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BPL()),
+        new(0x50, "BVC", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BVC()),
+        new(0x70, "BVS", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BVS()),
         // Register Transfers
         new(0xAA, "TAX", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TAX()),
         new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TAY()),
@@ -191,17 +201,20 @@ public class Cpu
         while (true)
         {
             var code = MemReadByte(programCounter++);
+            var pcBefore = programCounter;
             if (!Instructions.TryGetValue(code, out var opcode))
             {
                 throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
             }
 
-            if (opcode.Name == "BRK")
+            if (opcode.Opcode == 0x00) // BRK
                 return;
 
             opcode.Action(this, opcode.AddressingMode);
 
-            programCounter += (ushort)(opcode.Bytes - 1);
+            // check if we jumped during the action
+            if (programCounter == pcBefore)
+                programCounter += (ushort)(opcode.Bytes - 1);
         }
     }
 
@@ -269,7 +282,7 @@ public class Cpu
             registerA = param;
         }
     }
-    
+
     private void LSR(AddressingMode mode)
     {
         var param = RegisterA;
@@ -294,7 +307,7 @@ public class Cpu
             registerA = param;
         }
     }
-    
+
     private void ROR(AddressingMode mode)
     {
         var param = RegisterA;
@@ -322,7 +335,7 @@ public class Cpu
             registerA = param;
         }
     }
-    
+
     private void ROL(AddressingMode mode)
     {
         var param = RegisterA;
@@ -430,6 +443,78 @@ public class Cpu
     {
         registerY--;
         UpdateZeroAndNegativeFlags(registerY);
+    }
+
+    private void BCC()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (!TestFlag(CpuFlags.Carry))
+            programCounter = (ushort)(programCounter + value + 1);
+    }
+    
+    private void BCS()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (TestFlag(CpuFlags.Carry))
+            programCounter = (ushort)(programCounter + value + 1);
+    }
+    
+    private void BEQ()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (TestFlag(CpuFlags.Zero))
+            programCounter = (ushort)(programCounter + value + 1);
+    }    
+    
+    private void BNE()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (!TestFlag(CpuFlags.Zero))
+            programCounter = (ushort)(programCounter + value + 1);
+    }
+    
+    private void BMI()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (TestFlag(CpuFlags.Negative))
+            programCounter = (ushort)(programCounter + value + 1);
+    }
+    
+    private void BPL()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (!TestFlag(CpuFlags.Negative))
+            programCounter = (ushort)(programCounter + value + 1);
+    }
+    
+    private void BVC()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (!TestFlag(CpuFlags.Overflow))
+            programCounter = (ushort)(programCounter + value + 1);
+    }
+    
+    private void BVS()
+    {
+        var address = GetOperandAddress(AddressingMode.Relative);
+        var value = (sbyte)MemReadByte(address);
+
+        if (TestFlag(CpuFlags.Overflow))
+            programCounter = (ushort)(programCounter + value + 1);
     }
 
     private void UpdateZeroAndNegativeFlags(byte value)
