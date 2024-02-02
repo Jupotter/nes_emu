@@ -28,14 +28,15 @@ public enum AddressingMode
     Indirect_X,
     Indirect_Y,
     NoAddressing,
+    Accumulator = NoAddressing,
 }
 
 public class Cpu
 {
     private static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
     {
-        new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing, (_,_) => {}),
-        new(0xEA, "NOP", 1, 2, AddressingMode.NoAddressing, (_,_) => {}),
+        new(0x00, "BRK", 1, 7, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0xEA, "NOP", 1, 2, AddressingMode.NoAddressing, (_, _) => { }),
         // ADC
         new(0x69, "ADC", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.ADC(mode)),
         new(0x65, "ADC", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.ADC(mode)),
@@ -54,6 +55,30 @@ public class Cpu
         new(0x39, "AND", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.AND(mode)),
         new(0x21, "AND", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.AND(mode)),
         new(0x31, "AND", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.AND(mode)),
+        // ASL
+        new(0x0A, "ASL", 1, 2, AddressingMode.Accumulator, (cpu, mode) => cpu.ASL(mode)),
+        new(0x06, "ASL", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.ASL(mode)),
+        new(0x16, "ASL", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ASL(mode)),
+        new(0x0E, "ASL", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.ASL(mode)),
+        new(0x1E, "ASL", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.ASL(mode)),
+        // LSR
+        new(0x4A, "LSR", 1, 2, AddressingMode.Accumulator, (cpu, mode) => cpu.LSR(mode)),
+        new(0x46, "LSR", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.LSR(mode)),
+        new(0x56, "LSR", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.LSR(mode)),
+        new(0x4E, "LSR", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.LSR(mode)),
+        new(0x5E, "LSR", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.LSR(mode)),
+        // ROL
+        new(0x2A, "ROL", 1, 2, AddressingMode.Accumulator, (cpu, mode) => cpu.ROL(mode)),
+        new(0x26, "ROL", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.ROL(mode)),
+        new(0x36, "ROL", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ROL(mode)),
+        new(0x2E, "ROL", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.ROL(mode)),
+        new(0x3E, "ROL", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.ROL(mode)),
+        // ROR
+        new(0x6A, "ROR", 1, 2, AddressingMode.Accumulator, (cpu, mode) => cpu.ROR(mode)),
+        new(0x66, "ROR", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.ROR(mode)),
+        new(0x76, "ROR", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ROR(mode)),
+        new(0x6E, "ROR", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.ROR(mode)),
+        new(0x7E, "ROR", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.ROR(mode)),
         // SBC
         new(0xE9, "SBC", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.SBC(mode)),
         new(0xE5, "SBC", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.SBC(mode)),
@@ -215,9 +240,115 @@ public class Cpu
     {
         var address = GetOperandAddress(mode);
         var param = MemReadByte(address);
-        
+
         registerA &= param;
         UpdateZeroAndNegativeFlags(registerA);
+    }
+
+    private void ASL(AddressingMode mode)
+    {
+        var param = RegisterA;
+        ushort address = 0;
+        if (mode != AddressingMode.NoAddressing)
+        {
+            address = GetOperandAddress(mode);
+            param = MemReadByte(address);
+        }
+
+        UpdateFlags(CpuFlags.Carry, (param & 0x80) != 0);
+        param <<= 1;
+
+        UpdateZeroAndNegativeFlags(param);
+
+        if (mode != AddressingMode.NoAddressing)
+        {
+            MemWriteByte(address, param);
+        }
+        else
+        {
+            registerA = param;
+        }
+    }
+    
+    private void LSR(AddressingMode mode)
+    {
+        var param = RegisterA;
+        ushort address = 0;
+        if (mode != AddressingMode.NoAddressing)
+        {
+            address = GetOperandAddress(mode);
+            param = MemReadByte(address);
+        }
+
+        UpdateFlags(CpuFlags.Carry, (param & 0x1) != 0);
+        param >>= 1;
+
+        UpdateZeroAndNegativeFlags(param);
+
+        if (mode != AddressingMode.NoAddressing)
+        {
+            MemWriteByte(address, param);
+        }
+        else
+        {
+            registerA = param;
+        }
+    }
+    
+    private void ROR(AddressingMode mode)
+    {
+        var param = RegisterA;
+        ushort address = 0;
+        if (mode != AddressingMode.NoAddressing)
+        {
+            address = GetOperandAddress(mode);
+            param = MemReadByte(address);
+        }
+
+        var carry = TestFlag(CpuFlags.Carry);
+        UpdateFlags(CpuFlags.Carry, (param & 0x1) != 0);
+        param >>= 1;
+        if (carry)
+            param |= 0x80;
+
+        UpdateZeroAndNegativeFlags(param);
+
+        if (mode != AddressingMode.NoAddressing)
+        {
+            MemWriteByte(address, param);
+        }
+        else
+        {
+            registerA = param;
+        }
+    }
+    
+    private void ROL(AddressingMode mode)
+    {
+        var param = RegisterA;
+        ushort address = 0;
+        if (mode != AddressingMode.NoAddressing)
+        {
+            address = GetOperandAddress(mode);
+            param = MemReadByte(address);
+        }
+
+        var carry = TestFlag(CpuFlags.Carry);
+        UpdateFlags(CpuFlags.Carry, (param & 0x80) != 0);
+        param <<= 1;
+        if (carry)
+            param |= 0x1;
+
+        UpdateZeroAndNegativeFlags(param);
+
+        if (mode != AddressingMode.NoAddressing)
+        {
+            MemWriteByte(address, param);
+        }
+        else
+        {
+            registerA = param;
+        }
     }
 
     private void LDA(AddressingMode mode)
@@ -270,30 +401,31 @@ public class Cpu
         registerA = registerX;
         UpdateZeroAndNegativeFlags(registerA);
     }
-    
+
     private void TYA()
     {
         registerA = registerY;
         UpdateZeroAndNegativeFlags(registerA);
     }
-    
+
     private void INX()
     {
         registerX++;
         UpdateZeroAndNegativeFlags(registerX);
     }
-    
+
     private void INY()
     {
         registerY++;
         UpdateZeroAndNegativeFlags(registerY);
     }
+
     private void DEX()
     {
         registerX--;
         UpdateZeroAndNegativeFlags(registerX);
     }
-    
+
     private void DEY()
     {
         registerY--;
@@ -310,7 +442,7 @@ public class Cpu
     {
         return value ? SetFlag(flag) : ResetFlag(flag);
     }
-    
+
     public CpuFlags SetFlag(CpuFlags flag)
     {
         status |= flag;
@@ -386,5 +518,11 @@ public class Cpu
         registerY = value;
     }
 
-    private record struct Instruction(byte Opcode, string Name, int Bytes, int Cycles, AddressingMode AddressingMode, Action<Cpu, AddressingMode> Action);
+    private record struct Instruction(
+        byte Opcode,
+        string Name,
+        int Bytes,
+        int Cycles,
+        AddressingMode AddressingMode,
+        Action<Cpu, AddressingMode> Action);
 }
