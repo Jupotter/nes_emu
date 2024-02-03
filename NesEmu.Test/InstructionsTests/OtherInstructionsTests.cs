@@ -112,4 +112,55 @@ public class OtherInstructionsTests
         tested.Status.Should().Be(expectedStatus);
     }
 
+    [Test]
+    public void JMPAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address)
+    {
+        var program = new byte[] { 0x4C, (byte)address, (byte)(address >> 8) };
+        var tested = new Cpu();
+        
+        tested.Interpret(program);
+
+        tested.PC.Should().Be((ushort)(address+1));
+    }
+    
+    [Test]
+    public void JMPIndirectBugTest()
+    {
+        var program = new byte[] { 0x6C, 0xFF, 0x01 };
+        var tested = new Cpu();
+        
+        tested.MemWriteByte(0x0100, 0xDE);
+        tested.MemWriteByte(0x01FF, 0xAC);
+        tested.MemWriteByte(0x0200, 0x0D);
+        
+        tested.Interpret(program);
+
+        tested.PC.Should().Be(0xDEAD);
+    }
+    
+    [Test]
+    public void JSRAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address)
+    {
+        var program = new byte[] { 0x20, (byte)address, (byte)(address >> 8) };
+        var tested = new Cpu();
+        
+        tested.Interpret(program);
+
+        tested.PC.Should().Be((ushort)(address+1));
+        tested.RegisterS.Should().Be(0xFD);
+        tested.MemReadShort(0x1FE).Should().Be(0x8002);
+    }
+    
+    [Test]
+    public void RTSTest()
+    {
+        var program = new byte[] { 0x20, 0x06, 0x80, 0xAA, 0x00, 0x00, 0xA9, 0x77, 0x60 };
+        var tested = new Cpu();
+        
+        tested.Interpret(program);
+
+        tested.PC.Should().Be(0x8005);
+        tested.RegisterS.Should().Be(0xFF);
+        tested.RegisterX.Should().Be(0x77);
+    }
 }

@@ -26,6 +26,7 @@ public enum AddressingMode
     Absolute,
     Absolute_X,
     Absolute_Y,
+    Indirect,
     Indirect_X,
     Indirect_Y,
     NoAddressing,
@@ -152,6 +153,12 @@ public class Cpu
         new(0x38, "SEC", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.SetFlag(CpuFlags.Carry)),
         new(0xF8, "SED", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.SetFlag(CpuFlags.DecimalMode)),
         new(0x78, "SEI", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.SetFlag(CpuFlags.InterruptDisable)),
+        // Jumps and Calls
+        new(0x4C, "JMP", 3, 3, AddressingMode.Absolute, (cpu, mode) => cpu.JMP(mode)),
+        new(0x6C, "JMP", 3, 5, AddressingMode.Indirect, (cpu, mode) => cpu.JMP(mode)),
+        new(0x20, "JSR", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.JSR(mode)),
+        new(0x60, "RTS", 1, 6, AddressingMode.NoAddressing, (cpu, _) => cpu.RTS()),
+        
     }.ToDictionary(x => x.Opcode);
 
     private readonly byte[] memory = new byte[0x10000];
@@ -200,7 +207,7 @@ public class Cpu
         registerA = 0;
         registerX = 0;
         registerY = 0;
-        registerS = 0;
+        registerS = 0xFF;
         status = CpuFlags.None;
 
         programCounter = MemReadShort(0xFFFC);
@@ -533,6 +540,28 @@ public class Cpu
         if (TestFlag(CpuFlags.Overflow))
             programCounter = (ushort)(programCounter + value + 1);
     }
+
+    private void JMP(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        programCounter = address;
+    }
+    
+    private void JSR(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var returnAddress = (ushort)(programCounter + 1);
+        MemWriteShort((ushort)(0x100+registerS-1), returnAddress);
+        registerS -= 2;
+        programCounter = address;
+    }
+    
+    private void RTS()
+    {
+        var address = MemReadShort((ushort)(0x100+registerS+1));
+        registerS += 2;
+        programCounter = (ushort)(address+1);
+    }
     
     private void TXA()
     {
@@ -547,23 +576,23 @@ public class Cpu
 
     private void PHA()
     {
-        MemWriteByte((ushort)(0x100+registerS++),  RegisterA);
+        MemWriteByte((ushort)(0x100+registerS--),  RegisterA);
     }
     
     private void PHP()
     {
-        MemWriteByte((ushort)(0x100+registerS++), (byte)status);
+        MemWriteByte((ushort)(0x100+registerS--), (byte)status);
     }
     
     private void PLA()
     {
-        registerA = MemReadByte((ushort)(0x100 + (--registerS)));
+        registerA = MemReadByte((ushort)(0x100 + (++registerS)));
         UpdateZeroAndNegativeFlags(RegisterA);
     }
     
     private void PLP()
     {
-        status = (CpuFlags)MemReadByte((ushort)(0x100 + (--registerS)));
+        status = (CpuFlags)MemReadByte((ushort)(0x100 + (++registerS)));
     }
 
     private void UpdateZeroAndNegativeFlags(byte value)
@@ -632,6 +661,7 @@ public class Cpu
             AddressingMode.ZeroPage_Y => (byte)(MemReadByte(programCounter) + registerY),
             AddressingMode.Absolute_X => (ushort)(MemReadShort(programCounter) + registerX),
             AddressingMode.Absolute_Y => (ushort)(MemReadShort(programCounter) + registerY),
+            AddressingMode.Indirect => ReadIndirectJmpAddress(),
             AddressingMode.Indirect_X
                 => MemReadShort((byte)(MemReadByte(programCounter) + registerX)),
             AddressingMode.Indirect_Y
@@ -640,6 +670,16 @@ public class Cpu
                 => throw new InvalidOperationException($"Mode {mode} is not supported"),
             _ => throw new ArgumentOutOfRangeException(nameof(mode)),
         };
+    }
+
+    private ushort ReadIndirectJmpAddress()
+    {
+        var lowAddress = MemReadShort(programCounter); 
+        var lo = MemReadByte(lowAddress);
+        // Add 1 but wrap around page boundary
+        var highAddress = (ushort)(0xFF00 & lowAddress | 0x00FF & lowAddress + 1);
+        var hi = MemReadByte(highAddress);
+        return (ushort)(hi << 8 | lo);
     }
 
     public void SetRegisterX(byte value)
