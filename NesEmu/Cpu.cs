@@ -132,6 +132,13 @@ public class Cpu
         new(0xA8, "TAY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TAY()),
         new(0x8A, "TXA", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TXA()),
         new(0x98, "TYA", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TYA()),
+        // Stack manipulation
+        new(0x9A, "TXS", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TXS()),
+        new(0xBA, "TSX", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.TSX()),
+        new(0x48, "PHA", 1, 3, AddressingMode.NoAddressing, (cpu, _) => cpu.PHA()),
+        new(0x08, "PHP", 1, 3, AddressingMode.NoAddressing, (cpu, _) => cpu.PHP()),
+        new(0x68, "PLA", 1, 4, AddressingMode.NoAddressing, (cpu, _) => cpu.PLA()),
+        new(0x28, "PLP", 1, 4, AddressingMode.NoAddressing, (cpu, _) => cpu.PLP()),
         // Increment/Decrement
         new(0xE8, "INX", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.INX()),
         new(0xC8, "INY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.INY()),
@@ -153,6 +160,7 @@ public class Cpu
     private byte registerA;
     private byte registerX;
     private byte registerY;
+    private byte registerS;
     private CpuFlags status = CpuFlags.None;
 
     private Span<byte> Rom => memory.AsSpan()[0x8000..];
@@ -160,6 +168,7 @@ public class Cpu
     public byte RegisterA => registerA;
     public byte RegisterX => registerX;
     public byte RegisterY => registerY;
+    public byte RegisterS => registerS;
     public CpuFlags Status => status;
     public ushort PC => programCounter;
 
@@ -191,6 +200,7 @@ public class Cpu
         registerA = 0;
         registerX = 0;
         registerY = 0;
+        registerS = 0;
         status = CpuFlags.None;
 
         programCounter = MemReadShort(0xFFFC);
@@ -410,16 +420,16 @@ public class Cpu
         UpdateZeroAndNegativeFlags(registerX);
     }
 
+    private void TSX()
+    {
+        registerX = registerS;
+        UpdateZeroAndNegativeFlags(registerX);
+    }
+    
     private void TAY()
     {
         registerY = registerA;
         UpdateZeroAndNegativeFlags(registerY);
-    }
-
-    private void TXA()
-    {
-        registerA = registerX;
-        UpdateZeroAndNegativeFlags(registerA);
     }
 
     private void TYA()
@@ -522,6 +532,38 @@ public class Cpu
 
         if (TestFlag(CpuFlags.Overflow))
             programCounter = (ushort)(programCounter + value + 1);
+    }
+    
+    private void TXA()
+    {
+        registerA = registerX;
+        UpdateZeroAndNegativeFlags(registerA);
+    }
+    
+    private void TXS()
+    {
+        registerS = registerX;
+    }
+
+    private void PHA()
+    {
+        MemWriteByte((ushort)(0x100+registerS++),  RegisterA);
+    }
+    
+    private void PHP()
+    {
+        MemWriteByte((ushort)(0x100+registerS++), (byte)status);
+    }
+    
+    private void PLA()
+    {
+        registerA = MemReadByte((ushort)(0x100 + (--registerS)));
+        UpdateZeroAndNegativeFlags(RegisterA);
+    }
+    
+    private void PLP()
+    {
+        status = (CpuFlags)MemReadByte((ushort)(0x100 + (--registerS)));
     }
 
     private void UpdateZeroAndNegativeFlags(byte value)
