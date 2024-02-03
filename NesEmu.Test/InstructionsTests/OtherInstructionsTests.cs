@@ -163,4 +163,31 @@ public class OtherInstructionsTests
         tested.RegisterS.Should().Be(0xFF);
         tested.RegisterX.Should().Be(0x77);
     }
+    
+        
+    [Test]
+    public void BITTestNotZero()
+    {
+        var program = new byte[] { 0xA9, 0b100, 0x24, 0x10 };
+        var tested = new Cpu();
+        
+        tested.MemWriteByte(0x10, 0b101);
+        
+        tested.Interpret(program);
+
+        tested.Status.Should().Be(CpuFlags.None);
+    }
+    
+    [Test]
+    public void BITTestZero()
+    {
+        var program = new byte[] { 0xA9, 0b010, 0x24, 0x10 };
+        var tested = new Cpu();
+        
+        tested.MemWriteByte(0x10, 0b1100_0101);
+        
+        tested.Interpret(program);
+
+        tested.Status.Should().Be(CpuFlags.Zero | CpuFlags.Overflow| CpuFlags.Negative);
+    }
 }
