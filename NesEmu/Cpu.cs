@@ -57,6 +57,41 @@ public class Cpu
         new(0x39, "AND", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.AND(mode)),
         new(0x21, "AND", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.AND(mode)),
         new(0x31, "AND", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.AND(mode)),
+        // EOR
+        new(0x49, "EOR", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.EOR(mode)),
+        new(0x45, "EOR", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.EOR(mode)),
+        new(0x55, "EOR", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.EOR(mode)),
+        new(0x4D, "EOR", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.EOR(mode)),
+        new(0x5D, "EOR", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.EOR(mode)),
+        new(0x59, "EOR", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.EOR(mode)),
+        new(0x41, "EOR", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.EOR(mode)),
+        new(0x51, "EOR", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.EOR(mode)),
+        // ORA
+        new(0x09, "ORA", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.ORA(mode)),
+        new(0x05, "ORA", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.ORA(mode)),
+        new(0x15, "ORA", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ORA(mode)),
+        new(0x0D, "ORA", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.ORA(mode)),
+        new(0x1D, "ORA", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.ORA(mode)),
+        new(0x19, "ORA", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.ORA(mode)),
+        new(0x01, "ORA", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.ORA(mode)),
+        new(0x11, "ORA", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.ORA(mode)),
+        // CMP
+        new(0xC9, "CMD", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xC5, "CMD", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xD5, "CMD", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xCD, "CMD", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xDD, "CMD", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xD9, "CMD", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xC1, "CMD", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xD1, "CMD", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        // CPX
+        new(0xE0, "CPX", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.CMP(mode, cpu.RegisterX)),
+        new(0xE4, "CPX", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.CMP(mode, cpu.RegisterX)),
+        new(0xEC, "CPX", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.CMP(mode, cpu.RegisterX)),
+        // CPY
+        new(0xC0, "CPY", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.CMP(mode, cpu.RegisterY)),
+        new(0xC4, "CPY", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.CMP(mode, cpu.RegisterY)),
+        new(0xCC, "CPY", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.CMP(mode, cpu.RegisterY)),
         // ASL
         new(0x0A, "ASL", 1, 2, AddressingMode.Accumulator, (cpu, mode) => cpu.ASL(mode)),
         new(0x06, "ASL", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.ASL(mode)),
@@ -153,6 +188,14 @@ public class Cpu
         new(0xC8, "INY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.INY()),
         new(0xCA, "DEX", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.DEX()),
         new(0x88, "DEY", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.DEY()),
+        new(0xC6, "DEC", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.DEC(mode)),
+        new(0xD6, "DEC", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.DEC(mode)),
+        new(0xCE, "DEC", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.DEC(mode)),
+        new(0xDE, "DEC", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.DEC(mode)),
+        new(0xE6, "INC", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.INC(mode)),
+        new(0xF6, "INC", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.INC(mode)),
+        new(0xEE, "INC", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.INC(mode)),
+        new(0xFE, "INC", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.INC(mode)),
         // Status Flag Changes
         new(0x18, "CLC", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.ResetFlag(CpuFlags.Carry)),
         new(0xD8, "CLD", 1, 2, AddressingMode.NoAddressing, (cpu, _) => cpu.ResetFlag(CpuFlags.DecimalMode)),
@@ -298,6 +341,34 @@ public class Cpu
 
         registerA &= param;
         UpdateZeroAndNegativeFlags(registerA);
+    }
+    
+    private void EOR(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        registerA ^= param;
+        UpdateZeroAndNegativeFlags(registerA);
+    }
+    
+    private void ORA(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        registerA |= param;
+        UpdateZeroAndNegativeFlags(registerA);
+    }
+    
+    private void CMP(AddressingMode mode, byte register)
+    {
+        var address = GetOperandAddress(mode);
+        var param = MemReadByte(address);
+
+        var value = register - param;
+        UpdateZeroAndNegativeFlags((byte)value);
+        UpdateFlags(CpuFlags.Carry, value >= 0);
     }
 
     private void ASL(AddressingMode mode)
@@ -497,6 +568,28 @@ public class Cpu
     {
         registerY--;
         UpdateZeroAndNegativeFlags(registerY);
+    }
+    
+    private void DEC(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var value = MemReadByte(address);
+        
+        value--;
+        
+        MemWriteByte(address, value);
+        UpdateZeroAndNegativeFlags(value);
+    }
+        
+    private void INC(AddressingMode mode)
+    {
+        var address = GetOperandAddress(mode);
+        var value = MemReadByte(address);
+        
+        value++;
+        
+        MemWriteByte(address, value);
+        UpdateZeroAndNegativeFlags(value);
     }
 
     private void BCC()
