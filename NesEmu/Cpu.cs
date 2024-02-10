@@ -160,8 +160,8 @@ public class Cpu
         new(0x8E, "STX", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.STX(mode)),
         // STY
         new(0x84, "STY", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.STY(mode)),
-        new(0x94, "STY", 2, 43, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.STY(mode)),
-        new(0x8C, "STY", 3, 43, AddressingMode.Absolute, (cpu, mode) => cpu.STY(mode)),
+        new(0x94, "STY", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.STY(mode)),
+        new(0x8C, "STY", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.STY(mode)),
         // Branch
         new(0x90, "BCC", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BCC()),
         new(0xB0, "BCS", 2, 2, AddressingMode.Relative, (cpu, _) => cpu.BCS()),
