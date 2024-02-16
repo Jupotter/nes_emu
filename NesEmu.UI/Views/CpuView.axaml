@@ -10,17 +10,30 @@
     <Design.DataContext>
         <vm:CpuViewModel />
     </Design.DataContext>
-    <DockPanel HorizontalAlignment="Center">
-        <TextBlock TextAlignment="Center" FontFamily="Consolas" TextWrapping="NoWrap">
-            <TextBlock Text="{Binding RegisterA, StringFormat='A=${0:x2}'}" />
-            <TextBlock Text="{Binding RegisterX, StringFormat='X=${0:x2}'}" />
-            <TextBlock Text="{Binding RegisterY, StringFormat='Y=${0:x2}'}" /><LineBreak />
-            <TextBlock Text="{Binding RegisterS, StringFormat='SP=${0:x2}'}" />
-            <TextBlock Text="{Binding PC, StringFormat='PC=${0:x4}'}" /><LineBreak />
-            <TextBlock Text="{Binding Status, StringFormat='Status={0}'}" />
-        </TextBlock>
+    <Grid ColumnDefinitions="400,auto" RowDefinitions="400,*">
+        <Border BorderBrush="Gray" BorderThickness="1">
+            <Image Height="320" Width="320" Stretch="Uniform" Source="{Binding Frame}"></Image>
+        </Border>
 
-        <Button Command="{Binding StepCommand}">Step</Button>
-        <Button Command="{Binding RunCommand}">Run</Button>
-    </DockPanel>
+        <StackPanel Spacing="5" Grid.Row="0" Grid.RowSpan="1" Grid.Column="1">
+            <Border BorderThickness="1" BorderBrush="Black" DockPanel.Dock="Top">
+                <TextBlock TextAlignment="Center" FontFamily="Consolas" TextWrapping="NoWrap" Padding="10">
+                    <TextBlock Text="{Binding RegisterA, StringFormat='A=${0:x2}'}" />
+                    <TextBlock Text="{Binding RegisterX, StringFormat='X=${0:x2}'}" />
+                    <TextBlock Text="{Binding RegisterY, StringFormat='Y=${0:x2}'}" /><LineBreak />
+                    <TextBlock Text="{Binding RegisterS, StringFormat='SP=${0:x2}'}" />
+                    <TextBlock Text="{Binding PC, StringFormat='PC=${0:x4}'}" /><LineBreak />
+                    <TextBlock Text="{Binding Status, StringFormat='Status={0}'}" /><LineBreak />
+                    <TextBlock Text="{Binding NextInstruction}" />
+                </TextBlock>
+            </Border>
+            <Border BorderThickness="1" BorderBrush="Black" DockPanel.Dock="Top">
+                <DockPanel Margin="10">
+                    <Button Command="{Binding StepCommand}">Step</Button>
+                    <Button Command="{Binding RunCommand}">Run</Button>
+                    <Button Command="{Binding ResetCommand}">Reset</Button>
+                </DockPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
 </UserControl>

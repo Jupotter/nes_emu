@@ -282,14 +282,20 @@ public class Cpu
         PC = MemReadShort(0xFFFC);
     }
 
-    public bool Step()
+    public Instruction GetInstruction(ushort address)
     {
-        var code = MemReadByte(PC++);
-        var pcBefore = PC;
+        var code = MemReadByte(address);
         if (!Instructions.TryGetValue(code, out var opcode))
         {
-            throw new NotImplementedException($"Instruction 0x{code:X} not implemented");
+            throw new NotSupportedException($"Instruction 0x{code:X} not supported");
         }
+        return opcode;
+    }
+
+    public bool Step()
+    {
+        var opcode = GetInstruction(PC++);
+        var pcBefore = PC;
 
         if (opcode.Opcode == 0x00) // BRK
             return true;
@@ -833,7 +839,7 @@ public class Cpu
     }
 
     [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Local")]
-    private record struct Instruction(
+    public record struct Instruction(
         byte Opcode,
         string Name,
         int Bytes,
