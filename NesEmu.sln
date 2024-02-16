@@ -3,17 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmu", "NesEmu\NesEmu.csproj", "{DC6F180B-BBA6-4433-988B-1D1D0C94DC7C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesEmu", "NesEmu\NesEmu.csproj", "{DC6F180B-BBA6-4433-988B-1D1D0C94DC7C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmu.Test", "NesEmu.Test\NesEmu.Test.csproj", "{B37E21A4-CECD-4647-A5EC-F2B166E78E4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NesEmu.Test", "NesEmu.Test\NesEmu.Test.csproj", "{B37E21A4-CECD-4647-A5EC-F2B166E78E4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NesEmu.UI", "NesEmu.UI\NesEmu.UI.csproj", "{8215E82F-CA28-48E7-8EA5-9BD90E94883A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DC6F180B-BBA6-4433-988B-1D1D0C94DC7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -24,5 +23,15 @@ Global
 		{B37E21A4-CECD-4647-A5EC-F2B166E78E4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B37E21A4-CECD-4647-A5EC-F2B166E78E4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B37E21A4-CECD-4647-A5EC-F2B166E78E4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8215E82F-CA28-48E7-8EA5-9BD90E94883A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8215E82F-CA28-48E7-8EA5-9BD90E94883A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8215E82F-CA28-48E7-8EA5-9BD90E94883A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8215E82F-CA28-48E7-8EA5-9BD90E94883A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {458154BE-4723-49BB-8459-69E3C14E6BA6}
 	EndGlobalSection
 EndGlobal
