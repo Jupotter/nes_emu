@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NesEmu.UI.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:NesEmu.UI.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NesEmu.UI.Views.CpuView"
+             x:DataType="vm:CpuViewModel">
+    <Design.DataContext>
+        <vm:CpuViewModel />
+    </Design.DataContext>
+    <DockPanel HorizontalAlignment="Center">
+        <TextBlock TextAlignment="Center" FontFamily="Consolas" TextWrapping="NoWrap">
+            <TextBlock Text="{Binding RegisterA, StringFormat='A=${0:x2}'}" />
+            <TextBlock Text="{Binding RegisterX, StringFormat='X=${0:x2}'}" />
+            <TextBlock Text="{Binding RegisterY, StringFormat='Y=${0:x2}'}" /><LineBreak />
+            <TextBlock Text="{Binding RegisterS, StringFormat='SP=${0:x2}'}" />
+            <TextBlock Text="{Binding PC, StringFormat='PC=${0:x4}'}" /><LineBreak />
+            <TextBlock Text="{Binding Status, StringFormat='Status={0}'}" />
+        </TextBlock>
+
+        <Button Command="{Binding StepCommand}">Step</Button>
+        <Button Command="{Binding RunCommand}">Run</Button>
+    </DockPanel>
+</UserControl>

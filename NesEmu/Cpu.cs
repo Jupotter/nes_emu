@@ -225,7 +225,9 @@ public class Cpu
     private byte registerS;
     private CpuFlags status = CpuFlags.None;
 
-    private Span<byte> Rom => memory.AsSpan()[0x8000..];
+    private ushort romStart = 0x8000; 
+
+    private Span<byte> Rom => memory.AsSpan()[romStart..];
 
     public byte RegisterA => registerA;
     public byte RegisterX => registerX;
@@ -257,10 +259,16 @@ public class Cpu
         Run();
     }
 
+    public void Load(byte[] rom, ushort location)
+    {
+        romStart = location;
+        Load(rom);
+    }
+
     public void Load(byte[] rom)
     {
         rom.AsSpan().CopyTo(Rom);
-        MemWriteShort(0xfffc, 0x8000);
+        MemWriteShort(0xfffc, romStart);
     }
 
     public void Reset()
