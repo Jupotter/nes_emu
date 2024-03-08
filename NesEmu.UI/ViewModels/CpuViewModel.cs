@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
@@ -20,12 +21,11 @@ public class CpuViewModel : ViewModelBase
 
     public CpuViewModel()
     {
-        cpu = new Cpu(new NesBus());
-        cpu.Load(StaticPrograms.Snake, 0x0600);
+        var snakeRom = File.ReadAllBytes("Roms/snake.nes"); 
+        cpu = new Cpu(new NesBus(Rom.Parse(snakeRom)));
         
         cpu.MemWriteByte(0xff, 0x77);
-
-        cpu.Reset(0x0600);
+        cpu.Reset();
 
         StepCommand = ReactiveCommand.CreateFromTask(Step);
         RunCommand = ReactiveCommand.CreateFromTask(Run);

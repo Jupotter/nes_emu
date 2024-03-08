@@ -250,8 +250,8 @@ public class Cpu(IBus bus)
 
     public void Interpret(byte[] program)
     {
-        Load(program);
-        Reset();
+        Load(program, 0x8000);
+        Reset(0x8000);
         Run();
     }
 
@@ -260,15 +260,10 @@ public class Cpu(IBus bus)
         bus.Load(location, rom);
     }
 
-    public void Load(byte[] rom)
-    {
-        bus.LoadRom(rom);
-    }
-
-    public void Reset(ushort PcAddress)
+    public void Reset(ushort pcAddress)
     {
         Reset();
-        PC = PcAddress;
+        PC = pcAddress;
     }
     
     public void Reset()

@@ -29,4 +29,11 @@
     <ItemGroup>
       <ProjectReference Include="..\NesEmu\NesEmu.csproj" />
     </ItemGroup>
+
+
+    <ItemGroup>
+      <None Update="Roms\snake.nes">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 </Project>

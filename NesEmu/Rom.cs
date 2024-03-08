@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace NesEmu;
 
 public enum ScreenMirroring
@@ -16,13 +18,13 @@ public class Rom
     private Rom(byte[] prgRom, byte[] chrRom, byte mapper, ScreenMirroring mirroring)
     {
         Mirroring = mirroring;
-        PrgRom = prgRom;
-        ChrRom = chrRom;
+        PrgRom = prgRom.ToImmutableArray();
+        ChrRom = chrRom.ToImmutableArray();
         Mapper = mapper;
     }
 
-    public byte[] PrgRom { get; }
-    public byte[] ChrRom { get; }
+    public ImmutableArray<byte> PrgRom { get; }
+    public ImmutableArray<byte> ChrRom { get; }
 
     public byte Mapper { get; }
 
@@ -30,7 +32,7 @@ public class Rom
 
     public static Rom Parse(byte[] input)
     {
-        if (!input[..4].SequenceEqual(NesTag))
+        if (!input[..4].SequenceEqual(NesTag) || input.Length < 16)
         {
             throw new InvalidDataException("Not a NES rom");
         }
@@ -70,4 +72,7 @@ public class Rom
             mapper,
             mirroring);
     }
+
+    public static Rom Empty { get; } = new(Array.Empty<byte>(), Array.Empty<byte>(), 0, ScreenMirroring.Horizontal);
+    
 }
