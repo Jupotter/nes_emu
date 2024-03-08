@@ -7,7 +7,7 @@ public class RegisterManipulationTests
     public void SECTest()
     {
         var program = new byte[] { 0x38 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -18,7 +18,7 @@ public class RegisterManipulationTests
     public void SEDTest()
     {
         var program = new byte[] { 0xF8 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -29,7 +29,7 @@ public class RegisterManipulationTests
     public void SEITest()
     {
         var program = new byte[] { 0x78 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -40,7 +40,7 @@ public class RegisterManipulationTests
     public void CombinedTest()
     {
         var program = new byte[] { 0x38, 0x78, 0xF8 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -51,7 +51,7 @@ public class RegisterManipulationTests
     public void CLCTest()
     {
         var program = new byte[] { 0x38, 0x78, 0xF8, 0x18 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -62,7 +62,7 @@ public class RegisterManipulationTests
     public void CLDTest()
     {
         var program = new byte[] { 0x38, 0x78, 0xF8, 0xd8 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -73,7 +73,7 @@ public class RegisterManipulationTests
     public void CLITest()
     {
         var program = new byte[] { 0x38, 0x78, 0xF8, 0x58 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -84,7 +84,7 @@ public class RegisterManipulationTests
     public void CLVTest()
     {
         var program = new byte[] {  0xA9, 0x7f, 0x69, 0x7f, 0xb8 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 

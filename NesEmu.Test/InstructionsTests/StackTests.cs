@@ -6,7 +6,7 @@ public class StackTests
     public void TXSTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value)
     {
         var program = new byte[] { 0xA2, value, 0xA9, 0x00, 0x9A };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -20,7 +20,7 @@ public class StackTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, value, 0x9A, 0xA2, 0x00, 0xBA };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -34,7 +34,7 @@ public class StackTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA9, value, 0x48 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -48,7 +48,7 @@ public class StackTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA9, value, 0x08 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -61,7 +61,7 @@ public class StackTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA9, value, 0x48, 0xA9, 0x01, 0x68 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -74,7 +74,7 @@ public class StackTests
     public void PLPTest()
     {
         var program = new byte[] { 0xA9, 0b11001111, 0x48, 0xA9, 0x01, 0x28 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 

@@ -8,7 +8,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA9, value, 0xAA };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -22,7 +22,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA9, value, 0xA8 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -36,7 +36,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, value, 0x8A };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -50,7 +50,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, value, 0x98 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -64,7 +64,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value + 1));
         var program = new byte[] { 0xA9, value, 0xAA, 0xE8 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -78,7 +78,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value + 1));
         var program = new byte[] { 0xA0, value, 0xC8 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -91,7 +91,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value - 1));
         var program = new byte[] { 0xA2, value, 0xCA };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -104,7 +104,7 @@ public class OtherInstructionsTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value - 1));
         var program = new byte[] { 0xA0, value, 0x88 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -116,7 +116,7 @@ public class OtherInstructionsTests
     public void JMPAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address)
     {
         var program = new byte[] { 0x4C, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         
         tested.Interpret(program);
 
@@ -127,7 +127,7 @@ public class OtherInstructionsTests
     public void JMPIndirectBugTest()
     {
         var program = new byte[] { 0x6C, 0xFF, 0x01 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         
         tested.MemWriteByte(0x0100, 0xDE);
         tested.MemWriteByte(0x01FF, 0xAC);
@@ -142,7 +142,7 @@ public class OtherInstructionsTests
     public void JSRAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address)
     {
         var program = new byte[] { 0x20, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         
         tested.Interpret(program);
 
@@ -155,7 +155,7 @@ public class OtherInstructionsTests
     public void RTSTest()
     {
         var program = new byte[] { 0x20, 0x06, 0x80, 0xAA, 0x00, 0x00, 0xA9, 0x77, 0x60 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         
         tested.Interpret(program);
 
@@ -169,7 +169,7 @@ public class OtherInstructionsTests
     public void BITTestNotZero()
     {
         var program = new byte[] { 0xA9, 0b100, 0x24, 0x10 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         
         tested.MemWriteByte(0x10, 0b101);
         
@@ -182,7 +182,7 @@ public class OtherInstructionsTests
     public void BITTestZero()
     {
         var program = new byte[] { 0xA9, 0b010, 0x24, 0x10 };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         
         tested.MemWriteByte(0x10, 0b1100_0101);
         

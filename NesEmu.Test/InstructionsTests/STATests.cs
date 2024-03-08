@@ -7,7 +7,7 @@ public class STATests
     public void STAZeroPageTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte address)
     {
         var program = new byte[] { 0xA9, 0xDE, 0x85, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -22,7 +22,7 @@ public class STATests
         byte offset)
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x95, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -35,7 +35,7 @@ public class STATests
     public void STAAbsoluteTest([ValueSource(typeof(Utils), nameof(Utils.TestWords))] ushort address)
     {
         var program = new byte[] { 0xA9, 0xDE, 0x8D, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -50,7 +50,7 @@ public class STATests
         byte offset)
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x9D, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -65,7 +65,7 @@ public class STATests
         byte offset)
     {
         var program = new byte[] { 0xA0, offset, 0xA9, 0xDE, 0x99, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -80,7 +80,7 @@ public class STATests
         byte offset)
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x81, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteShort((byte)(address + offset), 0x605);
 
         tested.Interpret(program);
@@ -96,7 +96,7 @@ public class STATests
         byte offset)
     {
         var program = new byte[] { 0xA0, offset, 0xA9, 0xDE, 0x91, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteShort(address, 0x605);
 
         tested.Interpret(program);

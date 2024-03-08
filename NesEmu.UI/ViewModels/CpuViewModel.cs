@@ -20,12 +20,12 @@ public class CpuViewModel : ViewModelBase
 
     public CpuViewModel()
     {
-        cpu = new Cpu();
+        cpu = new Cpu(new NesBus());
         cpu.Load(StaticPrograms.Snake, 0x0600);
         
         cpu.MemWriteByte(0xff, 0x77);
 
-        cpu.Reset();
+        cpu.Reset(0x0600);
 
         StepCommand = ReactiveCommand.CreateFromTask(Step);
         RunCommand = ReactiveCommand.CreateFromTask(Run);

@@ -8,7 +8,7 @@ public class LDXTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, value };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -25,7 +25,7 @@ public class LDXTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA6, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, value);
 
         tested.Interpret(program);
@@ -45,7 +45,7 @@ public class LDXTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, offset, 0xB6, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((byte)(address + offset), value);
 
         tested.Interpret(program);
@@ -63,7 +63,7 @@ public class LDXTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xAE, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, value);
 
         tested.Interpret(program);
@@ -83,7 +83,7 @@ public class LDXTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, offset, 0xBE, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((ushort)(address + offset), value);
 
         tested.Interpret(program);
@@ -102,7 +102,7 @@ public class LDYTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, value };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -118,7 +118,7 @@ public class LDYTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA4, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, value);
 
         tested.Interpret(program);
@@ -137,7 +137,7 @@ public class LDYTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, offset, 0xB4, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((byte)(address + offset), value);
 
         tested.Interpret(program);
@@ -154,7 +154,7 @@ public class LDYTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xAC, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, value);
 
         tested.Interpret(program);
@@ -173,7 +173,7 @@ public class LDYTests
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, offset, 0xBC, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((ushort)(address + offset), value);
 
         tested.Interpret(program);

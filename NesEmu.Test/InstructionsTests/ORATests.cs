@@ -17,7 +17,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA9, left, 0x09, right };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -35,7 +35,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA9, left, 0x05, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, right);
 
         tested.Interpret(program);
@@ -56,7 +56,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA2, offset, 0xA9, left, 0x15, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((byte)(address + offset), right);
 
         tested.Interpret(program);
@@ -75,7 +75,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA9, left, 0x0D, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, right);
 
         tested.Interpret(program);
@@ -96,7 +96,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA2, offset, 0xA9, left, 0x1D,  (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((ushort)(address + offset), right);
 
         tested.Interpret(program);
@@ -117,7 +117,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA0, offset, 0xA9, left, 0x19,  (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((ushort)(address + offset), right);
 
         tested.Interpret(program);
@@ -138,7 +138,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA2, offset, 0xA9, left, 0x01, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteShort((byte)(address + offset), 0x605);
         tested.MemWriteByte(0x605, right);
 
@@ -160,7 +160,7 @@ public class ORATest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA0, offset, 0xA9, left, 0x11, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteShort(address, 0x605);
         tested.MemWriteByte((ushort)(0x605+offset), right);
 

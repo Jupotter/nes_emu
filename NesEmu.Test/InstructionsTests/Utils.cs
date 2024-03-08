@@ -30,4 +30,36 @@ public class Utils
     {
         return (byte)(value & 0x80);
     }
+    
+    
+    public class TestBus : IBus
+    {
+
+        private readonly byte[] memory = new byte[0x10000];
+
+        public byte[] Rom => memory[0x8000..];
+        
+
+        public byte MemRead(ushort address)
+        {
+            return memory[address];
+        }
+
+        public void MemWrite(ushort address, byte value)
+        {
+            memory[address] = value;
+        }
+
+        public void Load(ushort address, byte[] data)
+        {
+            data.CopyTo(memory, address);
+        }
+
+        public void LoadRom(byte[] data)
+        {
+            data.CopyTo(memory, 0x8000);
+            memory[0xFFFD] = 0x80;
+        }
+    }
+
 }

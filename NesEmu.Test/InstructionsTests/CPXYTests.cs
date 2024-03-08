@@ -20,7 +20,7 @@ public class CPXTest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA2, left, 0xE0, right };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -37,7 +37,7 @@ public class CPXTest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA2, left, 0xE4, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, right);
 
         tested.Interpret(program);
@@ -55,7 +55,7 @@ public class CPXTest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA2, left, 0xEC, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, right);
 
         tested.Interpret(program);
@@ -86,7 +86,7 @@ public class CPYTest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA0, left, 0xC0, right };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
 
         tested.Interpret(program);
 
@@ -103,7 +103,7 @@ public class CPYTest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA0, left, 0xC4, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, right);
 
         tested.Interpret(program);
@@ -121,7 +121,7 @@ public class CPYTest
     {
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA0, left, 0xCC, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, right);
 
         tested.Interpret(program);

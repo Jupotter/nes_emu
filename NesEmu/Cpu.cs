@@ -33,7 +33,7 @@ public enum AddressingMode
     Accumulator = NoAddressing,
 }
 
-public class Cpu
+public class Cpu(IBus bus)
 {
     private static readonly IReadOnlyDictionary<byte, Instruction> Instructions = new Instruction[]
     {
@@ -225,10 +225,6 @@ public class Cpu
     private byte registerS;
     private CpuFlags status = CpuFlags.None;
 
-    private ushort romStart = 0x8000; 
-
-    private Span<byte> Rom => memory.AsSpan()[romStart..];
-
     public byte RegisterA => registerA;
     public byte RegisterX => registerX;
     public byte RegisterY => registerY;
@@ -261,16 +257,20 @@ public class Cpu
 
     public void Load(byte[] rom, ushort location)
     {
-        romStart = location;
-        Load(rom);
+        bus.Load(location, rom);
     }
 
     public void Load(byte[] rom)
     {
-        rom.AsSpan().CopyTo(Rom);
-        MemWriteShort(0xfffc, romStart);
+        bus.LoadRom(rom);
     }
 
+    public void Reset(ushort PcAddress)
+    {
+        Reset();
+        PC = PcAddress;
+    }
+    
     public void Reset()
     {
         registerA = 0;
@@ -771,18 +771,18 @@ public class Cpu
 
     public byte MemReadByte(ushort address)
     {
-        return memory[address];
+        return bus.MemRead(address);
     }
 
     public void MemWriteByte(ushort address, byte value)
     {
-        memory[address] = value;
+        bus.MemWrite(address, value);
     }
 
     public ushort MemReadShort(ushort address)
     {
-        ushort low = memory[address];
-        ushort high = memory[address + 1];
+        ushort low = bus.MemRead(address);
+        ushort high = bus.MemRead((ushort)(address + 1));
 
         return (ushort)(high << 8 | low);
     }
@@ -792,8 +792,8 @@ public class Cpu
         var low = (byte)value;
         var high = (byte)(value >> 8);
 
-        memory[address] = low;
-        memory[address + 1] = high;
+        bus.MemWrite(address, low);
+        bus.MemWrite((ushort)(address + 1), high);
     }
 
     private ushort GetOperandAddress(AddressingMode mode)

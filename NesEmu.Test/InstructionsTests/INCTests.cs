@@ -10,7 +10,7 @@ public class INCTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value+1));
         var program = new byte[] { 0xE6, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, value);
 
         tested.Interpret(program);
@@ -29,7 +29,7 @@ public class INCTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value+1));
         var program = new byte[] { 0xA2, offset, 0xF6, address };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((byte)(address + offset), value);
 
         tested.Interpret(program);
@@ -46,7 +46,7 @@ public class INCTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value+1));
         var program = new byte[] { 0xEE, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte(address, value);
 
         tested.Interpret(program);
@@ -65,7 +65,7 @@ public class INCTests
     {
         var expectedStatus = Utils.GetExpectedFlag((byte)(value+1));
         var program = new byte[] { 0xA2, offset, 0xFE, (byte)address, (byte)(address >> 8) };
-        var tested = new Cpu();
+        var tested = new Cpu(new Utils.TestBus());
         tested.MemWriteByte((ushort)(address + offset), value);
 
         tested.Interpret(program);
