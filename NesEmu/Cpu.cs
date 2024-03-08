@@ -238,16 +238,43 @@ public class Cpu(IBus bus)
 
     public override string ToString()
     {
-        return $"""
-                Register A: {RegisterA:x2}
-                Register X: {RegisterX:x2}
-                Register Y: {RegisterY:x2}
-                Register S: {RegisterS:x2}
-                Status: {Status}
-                PC: {PC:x4}
-                """;
+        var instruction = GetInstruction(PC);
+        var bytes = GetInstructionBytes(instruction, PC);
+        var bytesFormatted = string.Join(" ", bytes.Select(x => x.ToString("X2"))).PadRight(8);
+        var instructionStr = PrintOpcodeWithParameters(instruction, bytes).PadRight(30);
+        return $"{PC:X4}  {bytesFormatted}  {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status + 32:X2} SP:{RegisterS:X2}";
     }
-
+    
+    private IReadOnlyList<byte> GetInstructionBytes(Instruction instruction, ushort address)
+    {
+        List<byte> bytes = [instruction.Opcode];
+        if (instruction.Byte >= 2)
+            bytes.Add(MemReadByte((ushort)(address + 1)));
+        if (instruction.Byte == 3)
+            bytes.Add(MemReadByte((ushort)(address + 2)));
+        return bytes;
+    }
+    
+    private string PrintOpcodeWithParameters(Instruction instruction, IReadOnlyList<byte> bytes)
+    {
+        var parameter = instruction.AddressingMode switch
+        {
+            AddressingMode.Immediate => $"#${bytes[1]:x2}",
+            AddressingMode.ZeroPage => $"${bytes[1]:x2}",
+            AddressingMode.ZeroPage_X => $"${bytes[1]:x2},X",
+            AddressingMode.ZeroPage_Y => $"${bytes[1]:x2},Y",
+            AddressingMode.Absolute => $"${bytes[1]:x2}{bytes[2]:x2}",
+            AddressingMode.Absolute_X => $"${bytes[1]:x2}{bytes[2]:x2},X",
+            AddressingMode.Absolute_Y => $"${bytes[1]:x2}{bytes[2]:x2},Y",
+            AddressingMode.Indirect => $"(${bytes[1]:x2})",
+            AddressingMode.Indirect_X => $"(${bytes[1]:x2},X)",
+            AddressingMode.Indirect_Y => $"(${bytes[1]:x2}),Y",
+            AddressingMode.NoAddressing => "",
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+        return $"{instruction.Name} {parameter}";
+    }
+    
     public void Interpret(byte[] program)
     {
         Load(program, 0x8000);
@@ -255,12 +282,12 @@ public class Cpu(IBus bus)
         Run();
     }
 
-    public void Load(byte[] rom, ushort location)
+    private void Load(byte[] rom, ushort location)
     {
         bus.Load(location, rom);
     }
 
-    public void Reset(ushort pcAddress)
+    private void Reset(ushort pcAddress)
     {
         Reset();
         PC = pcAddress;
@@ -271,8 +298,8 @@ public class Cpu(IBus bus)
         registerA = 0;
         registerX = 0;
         registerY = 0;
-        registerS = 0xFF;
-        status = CpuFlags.None;
+        registerS = 0xFD;
+        status = CpuFlags.InterruptDisable;
 
         PC = MemReadShort(0xFFFC);
     }
@@ -299,7 +326,7 @@ public class Cpu(IBus bus)
 
         // check if we jumped during the action
         if (PC == pcBefore)
-            PC += (ushort)(opcode.Bytes - 1);
+            PC += (ushort)(opcode.Byte - 1);
         return false;
     }
     
@@ -683,15 +710,15 @@ public class Cpu(IBus bus)
     {
         var address = GetOperandAddress(mode);
         var returnAddress = (ushort)(PC + 1);
-        MemWriteShort((ushort)(0x100+registerS-1), returnAddress);
+        MemWriteShort((ushort)(0x100+registerS), returnAddress);
         registerS -= 2;
         PC = address;
     }
     
     private void RTS()
     {
-        var address = MemReadShort((ushort)(0x100+registerS+1));
         registerS += 2;
+        var address = MemReadShort((ushort)(0x100+registerS));
         PC = (ushort)(address+1);
     }
     
@@ -822,6 +849,16 @@ public class Cpu(IBus bus)
         var hi = MemReadByte(highAddress);
         return (ushort)(hi << 8 | lo);
     }
+    
+    public void SetPc(ushort value)
+    {
+        programCounter = value;
+    }
+    
+    public void SetRegisterA(byte value)
+    {
+        registerA = value;
+    }
 
     public void SetRegisterX(byte value)
     {
@@ -837,7 +874,7 @@ public class Cpu(IBus bus)
     public record struct Instruction(
         byte Opcode,
         string Name,
-        int Bytes,
+        byte Byte,
         int Cycles,
         AddressingMode AddressingMode,
         Action<Cpu, AddressingMode> Action);

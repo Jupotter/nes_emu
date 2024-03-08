@@ -9,16 +9,18 @@ public class Utils
 
     public static CpuFlags GetExpectedFlag(byte value)
     {
+        var status = CpuFlags.None;
         if ((sbyte)value < 0)
         {
-            return CpuFlags.Negative;
+            status = CpuFlags.Negative;
         }
 
-        return value switch
+        status |= value switch
         {
             0x00 => CpuFlags.Zero,
             _ => CpuFlags.None,
         };
+        return status | CpuFlags.InterruptDisable;
     }
 
     public static ushort ExpectedPc(byte[] program)

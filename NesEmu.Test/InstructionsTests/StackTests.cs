@@ -38,8 +38,8 @@ public class StackTests
 
         tested.Interpret(program);
 
-        tested.RegisterS.Should().Be(0xFE);
-        tested.MemReadByte(0x1FF).Should().Be(value);
+        tested.RegisterS.Should().Be(0xFC);
+        tested.MemReadByte(0x1FD).Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
     }
     
@@ -52,8 +52,8 @@ public class StackTests
 
         tested.Interpret(program);
 
-        tested.RegisterS.Should().Be(0xFE);
-        tested.MemReadByte(0x1FF).Should().Be((byte)expectedStatus);
+        tested.RegisterS.Should().Be(0xFC);
+        tested.MemReadByte(0x1FD).Should().Be((byte)expectedStatus);
     }
         
     [Test]
@@ -65,7 +65,7 @@ public class StackTests
 
         tested.Interpret(program);
 
-        tested.RegisterS.Should().Be(0xFF);
+        tested.RegisterS.Should().Be(0xFD);
         tested.RegisterA.Should().Be(value);
         tested.Status.Should().Be(expectedStatus);
     }
@@ -78,7 +78,7 @@ public class StackTests
 
         tested.Interpret(program);
 
-        tested.RegisterS.Should().Be(0xFF);
+        tested.RegisterS.Should().Be(0xFD);
         tested.Status.Should().Be(CpuFlags.Negative | CpuFlags.Overflow | CpuFlags.DecimalMode | CpuFlags.InterruptDisable | CpuFlags.Zero | CpuFlags.Carry);
     }
 }

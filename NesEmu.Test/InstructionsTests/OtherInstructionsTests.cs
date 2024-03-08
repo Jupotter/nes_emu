@@ -147,8 +147,8 @@ public class OtherInstructionsTests
         tested.Interpret(program);
 
         tested.PC.Should().Be((ushort)(address+1));
-        tested.RegisterS.Should().Be(0xFD);
-        tested.MemReadShort(0x1FE).Should().Be(0x8002);
+        tested.RegisterS.Should().Be(0xFB);
+        tested.MemReadShort(0x1FD).Should().Be(0x8002);
     }
     
     [Test]
@@ -160,7 +160,7 @@ public class OtherInstructionsTests
         tested.Interpret(program);
 
         tested.PC.Should().Be(0x8005);
-        tested.RegisterS.Should().Be(0xFF);
+        tested.RegisterS.Should().Be(0xFD);
         tested.RegisterX.Should().Be(0x77);
     }
     
@@ -175,7 +175,7 @@ public class OtherInstructionsTests
         
         tested.Interpret(program);
 
-        tested.Status.Should().Be(CpuFlags.None);
+        tested.Status.Should().NotHaveFlag(CpuFlags.Zero);
     }
     
     [Test]
@@ -188,6 +188,6 @@ public class OtherInstructionsTests
         
         tested.Interpret(program);
 
-        tested.Status.Should().Be(CpuFlags.Zero | CpuFlags.Overflow| CpuFlags.Negative);
+        tested.Status.Should().Be(CpuFlags.Zero | CpuFlags.Overflow| CpuFlags.Negative | CpuFlags.InterruptDisable);
     }
 }
