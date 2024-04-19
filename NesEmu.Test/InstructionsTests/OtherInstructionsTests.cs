@@ -148,7 +148,7 @@ public class OtherInstructionsTests
 
         tested.PC.Should().Be((ushort)(address+1));
         tested.RegisterS.Should().Be(0xFB);
-        tested.MemReadShort(0x1FD).Should().Be(0x8002);
+        tested.MemReadShort(0x1FC).Should().Be(0x8002);
     }
     
     [Test]

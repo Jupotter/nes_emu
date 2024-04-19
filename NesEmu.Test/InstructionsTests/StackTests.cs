@@ -80,6 +80,6 @@ public class StackTests
         tested.Interpret(program);
 
         tested.RegisterS.Should().Be(0xFD);
-        tested.Status.Should().Be(CpuFlags.Negative | CpuFlags.Overflow | CpuFlags.DecimalMode | CpuFlags.InterruptDisable | CpuFlags.Zero | CpuFlags.Carry);
+        tested.Status.Should().Be(CpuFlags.Negative | CpuFlags.Overflow | CpuFlags.DecimalMode | CpuFlags.InterruptDisable | CpuFlags.Zero | CpuFlags.Carry | CpuFlags.Unused);
     }
 }

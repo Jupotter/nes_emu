@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace NesEmu;
 
 [Flags]
@@ -255,6 +253,8 @@ public class Cpu(IBus bus)
             bytes.Add(MemReadByte((ushort)(address + 2)));
         return bytes;
     }
+
+    private HashSet<string> printValueInstructions = ["STX", "STA", "STY", "BIT", "LDX", "LDY", "LDA"];
     
     private string PrintOpcodeWithParameters(Instruction instruction, IReadOnlyList<byte> bytes)
     {
@@ -265,7 +265,7 @@ public class Cpu(IBus bus)
         {
             AddressingMode.Immediate => $"#${bytes[1]:X2}",
             AddressingMode.Relative => $"${PC + bytes[1] + 2:X4}",
-            AddressingMode.ZeroPage => $"${bytes[1]:X2} = {MemReadByte(address):X2}",
+            AddressingMode.ZeroPage => $"${bytes[1]:X2}",
             AddressingMode.ZeroPage_X => $"${bytes[1]:X2},X",
             AddressingMode.ZeroPage_Y => $"${bytes[1]:X2},Y",
             AddressingMode.Absolute => $"${bytes[2]:X2}{bytes[1]:X2}",
@@ -277,6 +277,10 @@ public class Cpu(IBus bus)
             AddressingMode.NoAddressing => "",
             _ => throw new ArgumentOutOfRangeException(),
         };
+        if (printValueInstructions.Contains(instruction.Name) && instruction.AddressingMode != AddressingMode.Immediate)
+        {
+            parameter += $" = {MemReadByte(address):X2}";
+        }
         return $"{instruction.Name} {parameter}";
     }
     
@@ -715,16 +719,20 @@ public class Cpu(IBus bus)
     {
         var address = GetOperandAddress(mode);
         var returnAddress = (ushort)(PC + 1);
-        MemWriteShort((ushort)(0x100+registerS), returnAddress);
-        registerS -= 2;
+        var low = (byte)returnAddress;
+        var high = (byte)(returnAddress >> 8);
+        
+        StackPush(high);
+        StackPush(low);
         PC = address;
     }
     
     private void RTS()
     {
-        registerS += 2;
-        var address = MemReadShort((ushort)(0x100+registerS));
-        PC = (ushort)(address+1);
+        var low = StackPop();
+        var high = StackPop();
+        var newAddress = (ushort)(high << 8 | low);
+        PC = (ushort)(newAddress+1);
     }
     
     private void TXA()
@@ -740,25 +748,25 @@ public class Cpu(IBus bus)
 
     private void PHA()
     {
-        MemWriteByte((ushort)(0x100+registerS--),  RegisterA);
+        StackPush(RegisterA);
     }
     
     private void PHP()
     {
         var value = status;
         value |= CpuFlags.BreakCommand;
-        MemWriteByte((ushort)(0x100+registerS--), (byte)value);
+        StackPush((byte)value);
     }
     
     private void PLA()
     {
-        registerA = MemReadByte((ushort)(0x100 + (++registerS)));
+        registerA = StackPop();
         UpdateZeroAndNegativeFlags(RegisterA);
     }
     
     private void PLP()
     {
-        var value = (CpuFlags)MemReadByte((ushort)(0x100 + (++registerS)));
+        var value = (CpuFlags)StackPop();
         status = (value & ~CpuFlags.BreakCommand) | CpuFlags.Unused;
     }
 
@@ -809,6 +817,22 @@ public class Cpu(IBus bus)
         bus.MemWrite(address, value);
     }
 
+    private void StackPush(byte value)
+    {
+        MemWriteByte((ushort)(0x100+registerS--),  value);
+    }
+
+    private byte StackPop()
+    {
+        return MemReadByte((ushort)(0x100 + ++registerS));
+    }
+    
+    [UsedImplicitly]
+    public byte StackPeek()
+    {
+        return MemReadByte((ushort)(0x100 + registerS + 1));
+    }
+    
     public ushort MemReadShort(ushort address)
     {
         ushort low = bus.MemRead(address);
