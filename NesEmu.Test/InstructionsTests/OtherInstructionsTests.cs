@@ -188,6 +188,6 @@ public class OtherInstructionsTests
         
         tested.Interpret(program);
 
-        tested.Status.Should().Be(CpuFlags.Zero | CpuFlags.Overflow| CpuFlags.Negative | CpuFlags.InterruptDisable);
+        tested.Status.Should().Be(CpuFlags.Zero | CpuFlags.Overflow| CpuFlags.Negative | CpuFlags.InterruptDisable | CpuFlags.Unused);
     }
 }

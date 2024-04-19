@@ -44,7 +44,7 @@ public class RegisterManipulationTests
 
         tested.Interpret(program);
 
-        tested.Status.Should().Be(CpuFlags.Carry | CpuFlags.DecimalMode | CpuFlags.InterruptDisable);
+        tested.Status.Should().Be(CpuFlags.Carry | CpuFlags.DecimalMode | CpuFlags.InterruptDisable | CpuFlags.Unused);
     }
     
     [Test]
@@ -55,7 +55,7 @@ public class RegisterManipulationTests
 
         tested.Interpret(program);
 
-        tested.Status.Should().Be(CpuFlags.DecimalMode | CpuFlags.InterruptDisable);
+        tested.Status.Should().Be(CpuFlags.DecimalMode | CpuFlags.InterruptDisable | CpuFlags.Unused);
     }
     
     [Test]
@@ -66,7 +66,7 @@ public class RegisterManipulationTests
 
         tested.Interpret(program);
 
-        tested.Status.Should().Be(CpuFlags.Carry | CpuFlags.InterruptDisable);
+        tested.Status.Should().Be(CpuFlags.Carry | CpuFlags.InterruptDisable | CpuFlags.Unused);
     }
     
     [Test]
@@ -77,7 +77,7 @@ public class RegisterManipulationTests
 
         tested.Interpret(program);
 
-        tested.Status.Should().Be(CpuFlags.Carry | CpuFlags.DecimalMode);
+        tested.Status.Should().Be(CpuFlags.Carry | CpuFlags.DecimalMode | CpuFlags.Unused);
     }
     
     [Test]

@@ -46,7 +46,7 @@ public class NesBus : IBus
     private byte ReadPrgRom(ushort address)
     {
         var realAddress = address & 0x7fff;
-        if (realAddress > 0x4000 && rom.PrgRom.Length == 0x4000)
+        if (realAddress >= 0x4000 && rom.PrgRom.Length == 0x4000)
             realAddress %= 0x4000;
         return rom.PrgRom[realAddress];
     }

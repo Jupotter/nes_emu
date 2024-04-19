@@ -20,7 +20,7 @@ public class Utils
             0x00 => CpuFlags.Zero,
             _ => CpuFlags.None,
         };
-        return status | CpuFlags.InterruptDisable;
+        return status | CpuFlags.InterruptDisable | CpuFlags.Unused;
     }
 
     public static ushort ExpectedPc(byte[] program)

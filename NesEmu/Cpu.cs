@@ -11,6 +11,7 @@ public enum CpuFlags : byte
     InterruptDisable = 4,
     DecimalMode = 8,
     BreakCommand = 16,
+    Unused = 32,
     Overflow = 64,
     Negative = 128,
 }
@@ -19,7 +20,7 @@ public enum CpuFlags : byte
 public enum AddressingMode
 {
     Immediate,
-    Relative = Immediate,
+    Relative,
     ZeroPage,
     ZeroPage_X,
     ZeroPage_Y,
@@ -76,14 +77,14 @@ public class Cpu(IBus bus)
         new(0x01, "ORA", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.ORA(mode)),
         new(0x11, "ORA", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.ORA(mode)),
         // CMP
-        new(0xC9, "CMD", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
-        new(0xC5, "CMD", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
-        new(0xD5, "CMD", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
-        new(0xCD, "CMD", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
-        new(0xDD, "CMD", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
-        new(0xD9, "CMD", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
-        new(0xC1, "CMD", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
-        new(0xD1, "CMD", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xC9, "CMP", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xC5, "CMP", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xD5, "CMP", 2, 4, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xCD, "CMP", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xDD, "CMP", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xD9, "CMP", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xC1, "CMP", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
+        new(0xD1, "CMP", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.CMP(mode, cpu.RegisterA)),
         // CPX
         new(0xE0, "CPX", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.CMP(mode, cpu.RegisterX)),
         new(0xE4, "CPX", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.CMP(mode, cpu.RegisterX)),
@@ -242,7 +243,7 @@ public class Cpu(IBus bus)
         var bytes = GetInstructionBytes(instruction, PC);
         var bytesFormatted = string.Join(" ", bytes.Select(x => x.ToString("X2"))).PadRight(8);
         var instructionStr = PrintOpcodeWithParameters(instruction, bytes).PadRight(30);
-        return $"{PC:X4}  {bytesFormatted}  {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status + 32:X2} SP:{RegisterS:X2}";
+        return $"{PC:X4}  {bytesFormatted}  {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status:X2} SP:{RegisterS:X2}";
     }
     
     private IReadOnlyList<byte> GetInstructionBytes(Instruction instruction, ushort address)
@@ -257,18 +258,22 @@ public class Cpu(IBus bus)
     
     private string PrintOpcodeWithParameters(Instruction instruction, IReadOnlyList<byte> bytes)
     {
+        ushort address = 0;
+        if (instruction.AddressingMode != AddressingMode.NoAddressing)
+            address = GetOperandAddress(instruction.AddressingMode, (ushort)(PC+1));
         var parameter = instruction.AddressingMode switch
         {
-            AddressingMode.Immediate => $"#${bytes[1]:x2}",
-            AddressingMode.ZeroPage => $"${bytes[1]:x2}",
-            AddressingMode.ZeroPage_X => $"${bytes[1]:x2},X",
-            AddressingMode.ZeroPage_Y => $"${bytes[1]:x2},Y",
-            AddressingMode.Absolute => $"${bytes[1]:x2}{bytes[2]:x2}",
-            AddressingMode.Absolute_X => $"${bytes[1]:x2}{bytes[2]:x2},X",
-            AddressingMode.Absolute_Y => $"${bytes[1]:x2}{bytes[2]:x2},Y",
-            AddressingMode.Indirect => $"(${bytes[1]:x2})",
-            AddressingMode.Indirect_X => $"(${bytes[1]:x2},X)",
-            AddressingMode.Indirect_Y => $"(${bytes[1]:x2}),Y",
+            AddressingMode.Immediate => $"#${bytes[1]:X2}",
+            AddressingMode.Relative => $"${PC + bytes[1] + 2:X4}",
+            AddressingMode.ZeroPage => $"${bytes[1]:X2} = {MemReadByte(address):X2}",
+            AddressingMode.ZeroPage_X => $"${bytes[1]:X2},X",
+            AddressingMode.ZeroPage_Y => $"${bytes[1]:X2},Y",
+            AddressingMode.Absolute => $"${bytes[2]:X2}{bytes[1]:X2}",
+            AddressingMode.Absolute_X => $"${bytes[2]:X2}{bytes[1]:X2},X",
+            AddressingMode.Absolute_Y => $"${bytes[2]:X2}{bytes[1]:X2},Y",
+            AddressingMode.Indirect => $"(${bytes[1]:X2})",
+            AddressingMode.Indirect_X => $"(${bytes[1]:X2},X) @ {MemReadShort(bytes[1]):X4} = {address:X4} = {MemReadByte(address):X2}",
+            AddressingMode.Indirect_Y => $"(${bytes[1]:X2}),Y = {MemReadShort(bytes[1]):X4} @ {address:X4} = {MemReadByte(address):X2}",
             AddressingMode.NoAddressing => "",
             _ => throw new ArgumentOutOfRangeException(),
         };
@@ -299,7 +304,7 @@ public class Cpu(IBus bus)
         registerX = 0;
         registerY = 0;
         registerS = 0xFD;
-        status = CpuFlags.InterruptDisable;
+        status = CpuFlags.InterruptDisable | CpuFlags.Unused;
 
         PC = MemReadShort(0xFFFC);
     }
@@ -740,7 +745,9 @@ public class Cpu(IBus bus)
     
     private void PHP()
     {
-        MemWriteByte((ushort)(0x100+registerS--), (byte)status);
+        var value = status;
+        value |= CpuFlags.BreakCommand;
+        MemWriteByte((ushort)(0x100+registerS--), (byte)value);
     }
     
     private void PLA()
@@ -751,7 +758,8 @@ public class Cpu(IBus bus)
     
     private void PLP()
     {
-        status = (CpuFlags)MemReadByte((ushort)(0x100 + (++registerS)));
+        var value = (CpuFlags)MemReadByte((ushort)(0x100 + (++registerS)));
+        status = (value & ~CpuFlags.BreakCommand) | CpuFlags.Unused;
     }
 
     private void BIT(AddressingMode mode)
@@ -760,7 +768,7 @@ public class Cpu(IBus bus)
         var param = MemReadByte(address);
 
         UpdateFlags(CpuFlags.Zero, (param & registerA) == 0);
-        status = (CpuFlags)((byte)status | (param & 0b11000000));
+        status = (CpuFlags)((byte)status & 0b00111111 | (param & 0b11000000));
     }
 
     private void UpdateZeroAndNegativeFlags(byte value)
@@ -818,22 +826,29 @@ public class Cpu(IBus bus)
         bus.MemWrite((ushort)(address + 1), high);
     }
 
+
     private ushort GetOperandAddress(AddressingMode mode)
+    {
+        return GetOperandAddress(mode, PC);
+    }
+
+    private ushort GetOperandAddress(AddressingMode mode, ushort position)
     {
         return mode switch
         {
-            AddressingMode.Immediate => PC,
-            AddressingMode.ZeroPage => MemReadByte(PC),
-            AddressingMode.Absolute => MemReadShort(PC),
-            AddressingMode.ZeroPage_X => (byte)(MemReadByte(PC) + registerX),
-            AddressingMode.ZeroPage_Y => (byte)(MemReadByte(PC) + registerY),
-            AddressingMode.Absolute_X => (ushort)(MemReadShort(PC) + registerX),
-            AddressingMode.Absolute_Y => (ushort)(MemReadShort(PC) + registerY),
+            AddressingMode.Immediate => position,
+            AddressingMode.Relative => position,
+            AddressingMode.ZeroPage => MemReadByte(position),
+            AddressingMode.Absolute => MemReadShort(position),
+            AddressingMode.ZeroPage_X => (byte)(MemReadByte(position) + registerX),
+            AddressingMode.ZeroPage_Y => (byte)(MemReadByte(position) + registerY),
+            AddressingMode.Absolute_X => (ushort)(MemReadShort(position) + registerX),
+            AddressingMode.Absolute_Y => (ushort)(MemReadShort(position) + registerY),
             AddressingMode.Indirect => ReadIndirectJmpAddress(),
             AddressingMode.Indirect_X
-                => MemReadShort((byte)(MemReadByte(PC) + registerX)),
+                => MemReadShort((byte)(MemReadByte(position) + registerX)),
             AddressingMode.Indirect_Y
-                => (ushort)(MemReadShort(MemReadByte(PC)) + registerY),
+                => (ushort)(MemReadShort(MemReadByte(position)) + registerY),
             AddressingMode.NoAddressing
                 => throw new InvalidOperationException($"Mode {mode} is not supported"),
             _ => throw new ArgumentOutOfRangeException(nameof(mode)),

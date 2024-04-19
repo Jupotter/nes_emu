@@ -47,6 +47,7 @@ public class StackTests
     public void PHPTest([ValueSource(typeof(Utils), nameof(Utils.TestBytes))] byte value)
     {
         var expectedStatus = Utils.GetExpectedFlag(value);
+        expectedStatus |= CpuFlags.BreakCommand;
         var program = new byte[] { 0xA9, value, 0x08 };
         var tested = new Cpu(new Utils.TestBus());
 
