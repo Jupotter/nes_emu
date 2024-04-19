@@ -1,3 +1,4 @@
+// ReSharper disable InconsistentNaming Using instruction names as method names
 namespace NesEmu;
 
 [Flags]
@@ -935,24 +936,29 @@ public class Cpu(IBus bus)
         UpdateFlags(CpuFlags.Negative, (sbyte)value < 0);
     }
 
-    public CpuFlags UpdateFlags(CpuFlags flag, bool value)
+    private void UpdateFlags(CpuFlags flag, bool value)
     {
-        return value ? SetFlag(flag) : ResetFlag(flag);
+        if (value)
+        {
+            SetFlag(flag);
+        }
+        else
+        {
+            ResetFlag(flag);
+        }
     }
 
-    public CpuFlags SetFlag(CpuFlags flag)
+    private void SetFlag(CpuFlags flag)
     {
         status |= flag;
-        return status;
     }
 
-    public CpuFlags ResetFlag(CpuFlags flag)
+    private void ResetFlag(CpuFlags flag)
     {
         status &= ~flag;
-        return status;
     }
 
-    public bool TestFlag(CpuFlags flag)
+    private bool TestFlag(CpuFlags flag)
     {
         return (Status & flag) != 0;
     }
@@ -1097,6 +1103,7 @@ public class Cpu(IBus bus)
         byte Opcode,
         string Name,
         byte Byte,
+        // ReSharper disable once NotAccessedPositionalProperty.Global
         int Cycles,
         AddressingMode AddressingMode,
         Action<Cpu, AddressingMode> Action);
