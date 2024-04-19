@@ -29,7 +29,7 @@ public enum AddressingMode
     Indirect_X,
     Indirect_Y,
     NoAddressing,
-    Accumulator = NoAddressing,
+    Accumulator,
 }
 
 public class Cpu(IBus bus)
@@ -208,6 +208,7 @@ public class Cpu(IBus bus)
         new(0x6C, "JMP", 3, 5, AddressingMode.Indirect, (cpu, mode) => cpu.JMP(mode)),
         new(0x20, "JSR", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.JSR(mode)),
         new(0x60, "RTS", 1, 6, AddressingMode.NoAddressing, (cpu, _) => cpu.RTS()),
+        new(0x40, "RTI", 1, 6, AddressingMode.NoAddressing, (cpu, _) => cpu.RTI()),
         // BIT
         new(0x24, "BIT", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.BIT(mode)),
         new(0x2C, "BIT", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.BIT(mode)),
@@ -254,12 +255,12 @@ public class Cpu(IBus bus)
         return bytes;
     }
 
-    private HashSet<string> printValueInstructions = ["STX", "STA", "STY", "BIT", "LDX", "LDY", "LDA"];
+    private readonly HashSet<string> dontPrintValueInstructions = ["JMP", "JSR"];
     
     private string PrintOpcodeWithParameters(Instruction instruction, IReadOnlyList<byte> bytes)
     {
         ushort address = 0;
-        if (instruction.AddressingMode != AddressingMode.NoAddressing)
+        if (instruction.AddressingMode is not AddressingMode.NoAddressing and not AddressingMode.Accumulator)
             address = GetOperandAddress(instruction.AddressingMode, (ushort)(PC+1));
         var parameter = instruction.AddressingMode switch
         {
@@ -272,12 +273,17 @@ public class Cpu(IBus bus)
             AddressingMode.Absolute_X => $"${bytes[2]:X2}{bytes[1]:X2},X",
             AddressingMode.Absolute_Y => $"${bytes[2]:X2}{bytes[1]:X2},Y",
             AddressingMode.Indirect => $"(${bytes[1]:X2})",
-            AddressingMode.Indirect_X => $"(${bytes[1]:X2},X) @ {MemReadShort(bytes[1]):X4} = {address:X4} = {MemReadByte(address):X2}",
-            AddressingMode.Indirect_Y => $"(${bytes[1]:X2}),Y = {MemReadShort(bytes[1]):X4} @ {address:X4} = {MemReadByte(address):X2}",
+            AddressingMode.Indirect_X => $"(${bytes[1]:X2},X) @ {0xff & bytes[1]+registerX:X2} = {address:X4}",
+            AddressingMode.Indirect_Y => $"(${bytes[1]:X2}),Y = {MemReadShort(bytes[1]):X4} @ {address:X4}",
+            AddressingMode.Accumulator => "A",
             AddressingMode.NoAddressing => "",
             _ => throw new ArgumentOutOfRangeException(),
         };
-        if (printValueInstructions.Contains(instruction.Name) && instruction.AddressingMode != AddressingMode.Immediate)
+        if (!dontPrintValueInstructions.Contains(instruction.Name) &&
+            instruction.AddressingMode != AddressingMode.Immediate &&
+            instruction.AddressingMode != AddressingMode.NoAddressing &&
+            instruction.AddressingMode != AddressingMode.Relative &&
+            instruction.AddressingMode != AddressingMode.Accumulator)
         {
             parameter += $" = {MemReadByte(address):X2}";
         }
@@ -420,7 +426,7 @@ public class Cpu(IBus bus)
     {
         var param = RegisterA;
         ushort address = 0;
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             address = GetOperandAddress(mode);
             param = MemReadByte(address);
@@ -431,7 +437,7 @@ public class Cpu(IBus bus)
 
         UpdateZeroAndNegativeFlags(param);
 
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             MemWriteByte(address, param);
         }
@@ -445,7 +451,7 @@ public class Cpu(IBus bus)
     {
         var param = RegisterA;
         ushort address = 0;
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             address = GetOperandAddress(mode);
             param = MemReadByte(address);
@@ -456,7 +462,7 @@ public class Cpu(IBus bus)
 
         UpdateZeroAndNegativeFlags(param);
 
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             MemWriteByte(address, param);
         }
@@ -470,7 +476,7 @@ public class Cpu(IBus bus)
     {
         var param = RegisterA;
         ushort address = 0;
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             address = GetOperandAddress(mode);
             param = MemReadByte(address);
@@ -484,7 +490,7 @@ public class Cpu(IBus bus)
 
         UpdateZeroAndNegativeFlags(param);
 
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             MemWriteByte(address, param);
         }
@@ -498,7 +504,7 @@ public class Cpu(IBus bus)
     {
         var param = RegisterA;
         ushort address = 0;
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             address = GetOperandAddress(mode);
             param = MemReadByte(address);
@@ -512,7 +518,7 @@ public class Cpu(IBus bus)
 
         UpdateZeroAndNegativeFlags(param);
 
-        if (mode != AddressingMode.NoAddressing)
+        if (mode != AddressingMode.Accumulator)
         {
             MemWriteByte(address, param);
         }
@@ -735,6 +741,15 @@ public class Cpu(IBus bus)
         PC = (ushort)(newAddress+1);
     }
     
+    private void RTI()
+    {
+        PLP();
+        var low = StackPop();
+        var high = StackPop();
+        var newAddress = (ushort)(high << 8 | low);
+        PC = newAddress;
+    }
+    
     private void TXA()
     {
         registerA = registerX;
@@ -870,13 +885,23 @@ public class Cpu(IBus bus)
             AddressingMode.Absolute_Y => (ushort)(MemReadShort(position) + registerY),
             AddressingMode.Indirect => ReadIndirectJmpAddress(),
             AddressingMode.Indirect_X
-                => MemReadShort((byte)(MemReadByte(position) + registerX)),
+                => ReadIndirectX(MemReadByte(position)),
             AddressingMode.Indirect_Y
                 => (ushort)(MemReadShort(MemReadByte(position)) + registerY),
             AddressingMode.NoAddressing
                 => throw new InvalidOperationException($"Mode {mode} is not supported"),
             _ => throw new ArgumentOutOfRangeException(nameof(mode)),
         };
+    }
+    
+    
+    private ushort ReadIndirectX(byte operand)
+    {
+        var low  = MemReadByte((ushort)(0xff & (operand + registerX)));
+        // Add 1 but wrap around page boundary
+        var highAddress = (ushort)(0xff & (operand + registerX + 1));
+        var high = MemReadByte(highAddress);
+        return (ushort)(high << 8 | low);
     }
 
     private ushort ReadIndirectJmpAddress()

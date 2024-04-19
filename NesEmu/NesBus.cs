@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace NesEmu;
 
 public interface IBus
@@ -29,10 +31,12 @@ public class NesBus : IBus
     {
         switch (address)
         {
-            case > RamStart and < RamMirrorsEnd:
+            case >= RamStart and < RamMirrorsEnd:
             {
                 var realAddress = (ushort)(address & RamEnd);
-                return mainRam[realAddress];
+                var value =  mainRam[realAddress];
+                Debug.WriteLine($"R ram[{address:x4}]: {value:X2}");
+                return value;
             }
             case > RomStart:
             {
@@ -55,8 +59,9 @@ public class NesBus : IBus
     {
         switch (address)
         {
-            case > RamStart and < RamMirrorsEnd:
+            case >= RamStart and < RamMirrorsEnd:
             {
+                Debug.WriteLine($"W ram[{address:x4}]: {value:X2}");
                 var realAddress = (ushort)(address & RamEnd);
                 mainRam[realAddress] = value;
                 break;
