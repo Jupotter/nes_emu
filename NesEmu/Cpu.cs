@@ -238,36 +238,12 @@ public class Cpu(IBus bus)
         new(0xDC, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
         new(0xFC, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
         // LAX
-        new(0xA3, "*LAX", 2, 99, AddressingMode.Indirect_X, (cpu, mode) =>
-        {
-            cpu.LDA(mode);
-            cpu.LDX(mode);
-        }),
-        new(0xA7, "*LAX", 2, 99, AddressingMode.ZeroPage, (cpu, mode) =>
-        {
-            cpu.LDA(mode);
-            cpu.LDX(mode);
-        }),
-        new(0xAF, "*LAX", 3, 99, AddressingMode.Absolute, (cpu, mode) =>
-        {
-            cpu.LDA(mode);
-            cpu.LDX(mode);
-        }),
-        new(0xB3, "*LAX", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) =>
-        {
-            cpu.LDA(mode);
-            cpu.LDX(mode);
-        }),
-        new(0xB7, "*LAX", 2, 99, AddressingMode.ZeroPage_Y, (cpu, mode) =>
-        {
-            cpu.LDA(mode);
-            cpu.LDX(mode);
-        }),
-        new(0xBF, "*LAX", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) =>
-        {
-            cpu.LDA(mode);
-            cpu.LDX(mode);
-        }),
+        new(0xA3, "*LAX", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.LAX(mode)),
+        new(0xA7, "*LAX", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.LAX(mode)),
+        new(0xAF, "*LAX", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.LAX(mode)),
+        new(0xB3, "*LAX", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.LAX(mode)),
+        new(0xB7, "*LAX", 2, 99, AddressingMode.ZeroPage_Y, (cpu, mode) => cpu.LAX(mode)),
+        new(0xBF, "*LAX", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.LAX(mode)),
         // SAX
         new(0x83, "*SAX", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.SAX(mode)),
         new(0x87, "*SAX", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.SAX(mode)),
@@ -275,6 +251,56 @@ public class Cpu(IBus bus)
         new(0x93, "*SAX", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SAX(mode)),
         new(0x97, "*SAX", 2, 99, AddressingMode.ZeroPage_Y, (cpu, mode) => cpu.SAX(mode)),
         new(0x9F, "*SAX", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SAX(mode)),
+        // SBC
+        new(0xEB, "*SBC", 2, 99, AddressingMode.Immediate, (cpu, mode) => cpu.SBC(mode)),
+        // DCP
+        new(0xC3, "*DCP", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.DCP(mode)),
+        new(0xC7, "*DCP", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.DCP(mode)),
+        new(0xCF, "*DCP", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.DCP(mode)),
+        new(0xD3, "*DCP", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.DCP(mode)),
+        new(0xD7, "*DCP", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.DCP(mode)),
+        new(0xDB, "*DCP", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.DCP(mode)),
+        new(0xDF, "*DCP", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.DCP(mode)),
+        // ISB/C
+        new(0xE3, "*ISB", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.ISC(mode)),
+        new(0xE7, "*ISB", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.ISC(mode)),
+        new(0xEF, "*ISB", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.ISC(mode)),
+        new(0xF3, "*ISB", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.ISC(mode)),
+        new(0xF7, "*ISB", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ISC(mode)),
+        new(0xFB, "*ISB", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.ISC(mode)),
+        new(0xFF, "*ISB", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.ISC(mode)),
+        // SLO
+        new(0x03, "*SLO", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.SLO(mode)),
+        new(0x07, "*SLO", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.SLO(mode)),
+        new(0x0F, "*SLO", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.SLO(mode)),
+        new(0x13, "*SLO", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SLO(mode)),
+        new(0x17, "*SLO", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.SLO(mode)),
+        new(0x1B, "*SLO", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SLO(mode)),
+        new(0x1F, "*SLO", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.SLO(mode)),
+        // RLA
+        new(0x23, "*RLA", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.RLA(mode)),
+        new(0x27, "*RLA", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.RLA(mode)),
+        new(0x2F, "*RLA", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.RLA(mode)),
+        new(0x33, "*RLA", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.RLA(mode)),
+        new(0x37, "*RLA", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.RLA(mode)),
+        new(0x3B, "*RLA", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.RLA(mode)),
+        new(0x3F, "*RLA", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.RLA(mode)),
+        // SRE
+        new(0x43, "*SRE", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.SRE(mode)),
+        new(0x47, "*SRE", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.SRE(mode)),
+        new(0x4F, "*SRE", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.SRE(mode)),
+        new(0x53, "*SRE", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SRE(mode)),
+        new(0x57, "*SRE", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.SRE(mode)),
+        new(0x5B, "*SRE", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SRE(mode)),
+        new(0x5F, "*SRE", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.SRE(mode)),
+        // RRA
+        new(0x63, "*RRA", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.RRA(mode)),
+        new(0x67, "*RRA", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.RRA(mode)),
+        new(0x6F, "*RRA", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.RRA(mode)),
+        new(0x73, "*RRA", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.RRA(mode)),
+        new(0x77, "*RRA", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.RRA(mode)),
+        new(0x7B, "*RRA", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.RRA(mode)),
+        new(0x7F, "*RRA", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.RRA(mode)),
     }.ToDictionary(x => x.Opcode);
 
     private ushort programCounter;
@@ -616,6 +642,12 @@ public class Cpu(IBus bus)
         UpdateZeroAndNegativeFlags(registerY);
     }
 
+    private void LAX(AddressingMode mode)
+    {
+        LDA(mode);
+        LDX(mode);
+    }
+
     private void STA(AddressingMode mode)
     {
         var address = GetOperandAddress(mode);
@@ -859,6 +891,42 @@ public class Cpu(IBus bus)
 
         UpdateFlags(CpuFlags.Zero, (param & registerA) == 0);
         status = (CpuFlags)((byte)status & 0b00111111 | (param & 0b11000000));
+    }
+
+    private void DCP(AddressingMode mode)
+    {
+        DEC(mode);
+        CMP(mode, registerA);
+    }
+
+    private void ISC(AddressingMode mode)
+    {
+        INC(mode);
+        SBC(mode);
+    }
+
+    private void SLO(AddressingMode mode)
+    {
+        ASL(mode);
+        ORA(mode);
+    }
+
+    private void RLA(AddressingMode mode)
+    {
+        ROL(mode);
+        AND(mode);
+    }
+
+    private void SRE(AddressingMode mode)
+    {
+        LSR(mode);
+        EOR(mode);
+    }
+
+    private void RRA(AddressingMode mode)
+    {
+        ROR(mode);
+        ADC(mode);
     }
 
     private void UpdateZeroAndNegativeFlags(byte value)
