@@ -81,7 +81,7 @@ public class STATests
     {
         var program = new byte[] { 0xA2, offset, 0xA9, 0xDE, 0x81, address };
         var tested = new Cpu(new Utils.TestBus());
-        tested.MemWriteShort((byte)(address + offset), 0x605);
+        tested.MemWriteShortZeroPage((byte)(address + offset), 0x605);
 
         tested.Interpret(program);
 
@@ -97,7 +97,7 @@ public class STATests
     {
         var program = new byte[] { 0xA0, offset, 0xA9, 0xDE, 0x91, address };
         var tested = new Cpu(new Utils.TestBus());
-        tested.MemWriteShort(address, 0x605);
+        tested.MemWriteShortZeroPage(address, 0x605);
 
         tested.Interpret(program);
 

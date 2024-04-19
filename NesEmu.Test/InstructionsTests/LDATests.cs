@@ -121,7 +121,7 @@ public class LDATests
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA2, offset, 0xA1, address };
         var tested = new Cpu(new Utils.TestBus());
-        tested.MemWriteShort((byte)(address + offset), 0x605);
+        tested.MemWriteShortZeroPage((byte)(address + offset), 0x605);
         tested.MemWriteByte(0x605, value);
 
         tested.Interpret(program);
@@ -142,7 +142,7 @@ public class LDATests
         var expectedStatus = Utils.GetExpectedFlag(value);
         var program = new byte[] { 0xA0, offset, 0xB1, address };
         var tested = new Cpu(new Utils.TestBus());
-        tested.MemWriteShort(address, 0x605);
+        tested.MemWriteShortZeroPage(address, 0x605);
         tested.MemWriteByte((ushort)(0x605 + offset), value);
 
         tested.Interpret(program);

@@ -873,6 +873,18 @@ public class Cpu(IBus bus)
         bus.MemWrite(address, low);
         bus.MemWrite((ushort)(address + 1), high);
     }
+    
+    public void MemWriteShortZeroPage(int address, ushort value)
+    {
+        var low = (byte)value;
+        var high = (byte)(value >> 8);
+        var lowAddress  =(ushort)(0xff & address);
+        
+        bus.MemWrite(lowAddress, low);
+        // Add 1 but wrap around page boundary
+        var highAddress = (ushort)(0xff & (address + 1));
+        bus.MemWrite(highAddress, high);
+    }
 
 
     private ushort GetOperandAddress(AddressingMode mode)

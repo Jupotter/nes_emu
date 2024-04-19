@@ -142,7 +142,7 @@ public class CMPTest
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA2, offset, 0xA9, left, 0xC1, address };
         var tested = new Cpu(new Utils.TestBus());
-        tested.MemWriteShort((byte)(address + offset), 0x605);
+        tested.MemWriteShortZeroPage((byte)(address + offset), 0x605);
         tested.MemWriteByte(0x605, right);
 
         tested.Interpret(program);
@@ -164,7 +164,7 @@ public class CMPTest
         var (result, expectedStatus) = GetExpectedResult(left, right);
         var program = new byte[] { 0xA0, offset, 0xA9, left, 0xD1, address };
         var tested = new Cpu(new Utils.TestBus());
-        tested.MemWriteShort(address, 0x605);
+        tested.MemWriteShortZeroPage(address, 0x605);
         tested.MemWriteByte((ushort)(0x605+offset), right);
 
         tested.Interpret(program);
