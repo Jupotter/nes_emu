@@ -212,11 +212,35 @@ public class Cpu(IBus bus)
         // BIT
         new(0x24, "BIT", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.BIT(mode)),
         new(0x2C, "BIT", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.BIT(mode)),
+        // Illegal Opcodes
+        // NOP
+        new(0x04, "*NOP", 2, 99, AddressingMode.ZeroPage, (_, _) => { }),
+        new(0x44, "*NOP", 2, 99, AddressingMode.ZeroPage, (_, _) => { }),
+        new(0x64, "*NOP", 2, 99, AddressingMode.ZeroPage, (_, _) => { }),
+        new(0x0C, "*NOP", 3, 99, AddressingMode.Absolute, (_, _) => { }),
+        new(0x14, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x34, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x54, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x74, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0xD4, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0xF4, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x1A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x3A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x5A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x7A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0xDA, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0xFA, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x80, "*NOP", 2, 99, AddressingMode.Immediate, (_, _) => { }),
+        new(0x1C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
+        new(0x3C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
+        new(0x5C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
+        new(0x7C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
+        new(0xDC, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
+        new(0xFC, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
         
         
     }.ToDictionary(x => x.Opcode);
 
-    private readonly byte[] memory = new byte[0x10000];
     private ushort programCounter;
 
     private byte registerA;
@@ -241,8 +265,8 @@ public class Cpu(IBus bus)
         var instruction = GetInstruction(PC);
         var bytes = GetInstructionBytes(instruction, PC);
         var bytesFormatted = string.Join(" ", bytes.Select(x => x.ToString("X2"))).PadRight(8);
-        var instructionStr = PrintOpcodeWithParameters(instruction, bytes).PadRight(30);
-        return $"{PC:X4}  {bytesFormatted}  {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status:X2} SP:{RegisterS:X2}";
+        var instructionStr = PrintOpcodeWithParameters(instruction, bytes).PadRight(31);
+        return $"{PC:X4}  {bytesFormatted} {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status:X2} SP:{RegisterS:X2}";
     }
     
     private IReadOnlyList<byte> GetInstructionBytes(Instruction instruction, ushort address)
@@ -254,8 +278,6 @@ public class Cpu(IBus bus)
             bytes.Add(MemReadByte((ushort)(address + 2)));
         return bytes;
     }
-
-    private readonly HashSet<string> dontPrintValueInstructions = ["JSR"];
     
     private string PrintOpcodeWithParameters(Instruction instruction, IReadOnlyList<byte> bytes)
     {
@@ -286,7 +308,7 @@ public class Cpu(IBus bus)
             parameter += $" = {MemReadByte(address):X2}";
         }
         
-        return $"{instruction.Name} {parameter}";
+        return $"{instruction.Name,4} {parameter}";
     }
     
     public void Interpret(byte[] program)

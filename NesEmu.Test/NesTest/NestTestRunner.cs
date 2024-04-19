@@ -73,7 +73,7 @@ public class NestTestRunner
         cpu.SetPc(0xc000);
         var nesTestLog = LoadNestTestLog().Select(l => l[..73]).ToList();
 
-        foreach (var t in nesTestLog.TakeWhile(t => !t.StartsWith("C6BD")))
+        foreach (var t in nesTestLog)
         {
             cpu.ToString().Should().Be(t);
             cpu.Step();
