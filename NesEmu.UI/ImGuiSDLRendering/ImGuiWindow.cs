@@ -8,11 +8,13 @@ namespace NesEmu.UI.ImGuiSDLRendering;
 
 public class ImGuiWindow : IDisposable
 {
+    private readonly Application application;
     private readonly IntPtr window;
     private readonly IntPtr renderer;
 
-    public ImGuiWindow()
+    public ImGuiWindow(Application application)
     {
+        this.application = application;
         SDL_Init(SDL_INIT_EVERYTHING).ThrowOnError();
 
         const SDL_WindowFlags windowFlags = SDL_WindowFlags.SDL_WINDOW_RESIZABLE |
@@ -49,6 +51,8 @@ public class ImGuiWindow : IDisposable
         using var device = new ImGuiDevice(window, renderer);
 
         device.Initialize();
+        
+        SDL_SetWindowTitle(window, "NesEmu");
 
         while (true)
         {
@@ -62,8 +66,8 @@ public class ImGuiWindow : IDisposable
             stopwatch.Stop();
             device.NewFrame(stopwatch.Elapsed);
             ImGui.NewFrame();
-            ImGui.ShowDemoWindow();
 
+            application.NewFrame();
 
             ImGui.EndFrame();
             ImGui.Render();

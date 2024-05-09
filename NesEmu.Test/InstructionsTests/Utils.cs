@@ -57,6 +57,11 @@ public class Utils
             data.CopyTo(memory, address);
         }
 
+        public void Load(Rom newRom)
+        {
+            throw new NotImplementedException();
+        }
+
         public void LoadRom(byte[] data)
         {
             data.CopyTo(memory, 0x8000);

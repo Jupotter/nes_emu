@@ -15,6 +15,7 @@ using static Native;
 /// Implementation reference:
 /// https://github.com/ocornut/imgui/blob/e23c5edd5fdef85ea0f5418b1368adb94bf86230/backends/imgui_impl_sdl.cpp
 /// https://github.com/ocornut/imgui/blob/e23c5edd5fdef85ea0f5418b1368adb94bf86230/backends/imgui_impl_sdlrenderer.cpp
+/// https://github.com/GaryHuan9/Echo/blob/main/src/Echo.UserInterface/Backend/ImGuiDevice.cs
 /// </summary>
 public sealed unsafe class ImGuiDevice : IDisposable
 {
@@ -29,6 +30,8 @@ public sealed unsafe class ImGuiDevice : IDisposable
 		io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
 		io.BackendFlags |= ImGuiBackendFlags.HasSetMousePos;
 		io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
+
+		io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
 
 		//Link viewport data
 		SDL_SysWMinfo info = default;

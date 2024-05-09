@@ -1,5 +1,14 @@
-﻿using NesEmu.UI.ImGuiSDLRendering;
+﻿using System.IO;
+using NesEmu;
+using NesEmu.UI;
+using NesEmu.UI.ImGuiSDLRendering;
 
-ImGuiWindow window = new ImGuiWindow();
+var emulator = NesEmu.Emulator.Initialize();
+
+
+
+var application = new Application(emulator);
+
+using var window = new ImGuiWindow(application);
 
 window.Launch();

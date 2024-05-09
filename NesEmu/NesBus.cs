@@ -8,6 +8,8 @@ public interface IBus
     void MemWrite(ushort address, byte value);
 
     void Load(ushort address, byte[] data);
+
+    void Load(Rom newRom);
 }
 
 public class NesBus : IBus
@@ -20,7 +22,7 @@ public class NesBus : IBus
     private const ushort RomStart = 0x8000;
 
     private readonly byte[] mainRam = new byte[0x800];
-    private readonly Rom rom;
+    private Rom rom;
 
     public NesBus(Rom rom)
     {
@@ -79,5 +81,10 @@ public class NesBus : IBus
         if (address + data.Length > RamEnd)
             throw new InvalidOperationException($"Cannot load outside RAM to address {address}");
         data.CopyTo(mainRam, address);
+    }
+
+    public void Load(Rom newRom)
+    {
+        rom = newRom;
     }
 }
