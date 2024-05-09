@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -12,8 +13,7 @@ public class Application
     private readonly List<IElement> displayedElements = [];
     
     private readonly CpuWindow cpuWindow;
-
-
+    
     public Application(Emulator emulator)
     {
         this.emulator = emulator;
@@ -28,7 +28,6 @@ public class Application
         {
             element.NewFrame();
         }
-        Thread.Sleep(100);
     }
 
     private void ShowMenu()
@@ -39,7 +38,9 @@ public class Application
             {
                 if (ImGui.MenuItem("Snake"))
                     LoadSnake();
+                ImGui.EndMenu();
             }
+            ImGui.EndMainMenuBar();
         }
     }
 
@@ -50,5 +51,7 @@ public class Application
         emulator.Bus.Load(Rom.Parse(snakeRom));
         emulator.CPU.MemWriteByte(0xff, 0x77);
         emulator.CPU.Reset();
+        
+        displayedElements.Add(new SnakeDisplay(emulator));
     }
 }

@@ -6,6 +6,7 @@ public class CpuWindow: IElement
 {
     private readonly Cpu cpu;
     private bool running = false;
+    private int stepPerFrame = 50;
 
     public CpuWindow(Cpu cpu)
     {
@@ -16,7 +17,10 @@ public class CpuWindow: IElement
     {
         if (running)
         {
-            running = !cpu.Step();
+            for (var i = 0; i < stepPerFrame; i++)
+            {
+                running = !cpu.Step();
+            }
         }
 
         if (!ImGui.Begin("CPU Control"))
@@ -50,6 +54,8 @@ public class CpuWindow: IElement
                 running = true;
             }
         }
+
+        ImGui.SliderInt("Step per frame", ref stepPerFrame, 1, 100);
 
         ImGui.End();
     }

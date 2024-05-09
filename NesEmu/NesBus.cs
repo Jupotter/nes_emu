@@ -37,7 +37,6 @@ public class NesBus : IBus
             {
                 var realAddress = (ushort)(address & RamEnd);
                 var value =  mainRam[realAddress];
-                Debug.WriteLine($"R ram[{address:x4}]: {value:X2}");
                 return value;
             }
             case > RomStart:
@@ -63,7 +62,6 @@ public class NesBus : IBus
         {
             case >= RamStart and < RamMirrorsEnd:
             {
-                Debug.WriteLine($"W ram[{address:x4}]: {value:X2}");
                 var realAddress = (ushort)(address & RamEnd);
                 mainRam[realAddress] = value;
                 break;

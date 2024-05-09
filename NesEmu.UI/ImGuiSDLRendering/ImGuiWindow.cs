@@ -9,8 +9,8 @@ namespace NesEmu.UI.ImGuiSDLRendering;
 public class ImGuiWindow : IDisposable
 {
     private readonly Application application;
-    private readonly IntPtr window;
-    private readonly IntPtr renderer;
+    public static IntPtr window;
+    public static IntPtr renderer;
 
     public ImGuiWindow(Application application)
     {

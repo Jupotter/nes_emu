@@ -32,6 +32,8 @@ public sealed unsafe class ImGuiDevice : IDisposable
 		io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
 
 		io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+		
+		io.WantCaptureKeyboard = true;
 
 		//Link viewport data
 		SDL_SysWMinfo info = default;
