@@ -11,7 +11,7 @@ public class BusShould
     [TestCase((ushort) 0x1800)]
     public void WriteValueToMemory(ushort address)
     {
-        var tested = new NesBus(Rom.Empty);
+        var tested = new NesBus(Rom.Empty, new Ppu());
 
         tested.MemWrite(address, 0xDE);
 
@@ -22,7 +22,7 @@ public class BusShould
     [TestCase((ushort) 0xAA)]
     public void MirrorMainRam(ushort address)
     {
-        var tested = new NesBus(Rom.Empty);
+        var tested = new NesBus(Rom.Empty, new Ppu());
 
         tested.MemWrite(address, 0xDE);
 

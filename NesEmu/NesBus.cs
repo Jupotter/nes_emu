@@ -23,10 +23,12 @@ public class NesBus : IBus
 
     private readonly byte[] mainRam = new byte[0x800];
     private Rom rom;
+    private readonly Ppu ppu;
 
-    public NesBus(Rom rom)
+    public NesBus(Rom rom, Ppu ppu)
     {
         this.rom = rom;
+        this.ppu = ppu;
     }
 
     public byte MemRead(ushort address)
@@ -84,5 +86,6 @@ public class NesBus : IBus
     public void Load(Rom newRom)
     {
         rom = newRom;
+        ppu.Load(rom);
     }
 }

@@ -9,7 +9,7 @@ public class Emulator
     
     public static Emulator Initialize()
     {
-        var bus = new NesBus(Rom.Empty);
+        var bus = new NesBus(Rom.Empty, new Ppu());
         var cpu = new Cpu(bus);
         return new Emulator(cpu, bus);
     }
