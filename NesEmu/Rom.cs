@@ -13,7 +13,7 @@ public class Rom
     private const int ChrRomPageSize = 0x2000;
     private static readonly byte[] NesTag = [(byte)'N', (byte)'E', (byte)'S', 0x1A];
 
-    private Rom(byte[] prgRom, byte[] chrRom, byte mapper, ScreenMirroring mirroring)
+    public Rom(byte[] prgRom, byte[] chrRom, byte mapper, ScreenMirroring mirroring)
     {
         Mirroring = mirroring;
         PrgRom = prgRom.ToImmutableArray();
