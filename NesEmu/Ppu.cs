@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace NesEmu;
 
 public class Ppu
@@ -43,7 +45,11 @@ public class Ppu
             IncrementAddress();
             return Read(address);
         }
-        set { return; }
+        set { 
+            var address = addressRegister.Value;
+            IncrementAddress();
+            Write(address, value); 
+        }
     }
 
     public void IncrementAddress()
@@ -78,7 +84,27 @@ public class Ppu
             case >= 0x3f00 and < 0x3fff:
                 return paletteTable[(address - 0x3f00)];
             default:
+                Debug.Write($"Tried to read from unsupported address {address}");
                 return 0;
+        }
+    }
+    
+    private void Write(ushort address, byte value)
+    {
+        switch (address)
+        {
+            case < 0x2000:
+                Debug.Write($"Tried to write to CHR Rom address {address}");
+                return;
+            case >= 0x2000 and < 0x3f00:
+                VRamWrite(address, value);
+                break;
+            case >= 0x3f00 and < 0x3fff:
+                PaletteWrite((byte)(address - 0x3f00), value);
+                break;
+            default:
+                Debug.Write($"Tried to write to unsupported {address}");
+                break;
         }
     }
 

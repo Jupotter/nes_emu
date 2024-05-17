@@ -100,4 +100,22 @@ public class PpuShould
         result.Should().Be(0xDE);
         tested.ReadAddress.Should().Be((ushort)(address + 64));
     }
+    
+    [Test]
+    public void WriteDataToVRamAddress([ValueSource(typeof(PpuShould), nameof(TestVRamAddresses))] ushort address)
+    {
+        var tested = new Ppu();
+
+        tested.PpuAddr = (byte)((0xff00 & address) >> 8);
+        tested.PpuAddr = (byte)address;
+        tested.PpuData = 0xDE;
+
+        tested.ReadAddress.Should().Be((ushort)(address + 1));
+        
+        tested.PpuAddr = (byte)((0xff00 & address) >> 8);
+        tested.PpuAddr = (byte)address;
+        _ = tested.PpuData;
+        var result = tested.PpuData;
+        result.Should().Be(0xDE);
+    }
 }
