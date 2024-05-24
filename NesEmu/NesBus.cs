@@ -35,18 +35,46 @@ public class NesBus : IBus
     {
         switch (address)
         {
-            case >= RamStart and < RamMirrorsEnd:
+            case >= RamStart and <= RamMirrorsEnd:
             {
                 var realAddress = (ushort)(address & RamEnd);
-                var value =  mainRam[realAddress];
+                var value = mainRam[realAddress];
                 return value;
             }
+            case >= PpuRegisterStart and <= PpuRegisterMirrorsEnd:
+            {
+                return ReadPpuRegister(address);
+            }
+            case 0x4014:
+                throw new InvalidOperationException("Attempted to read from a write only address");
             case > RomStart:
             {
                 return ReadPrgRom(address);
             }
             default:
                 return 0;
+        }
+    }
+
+    private byte ReadPpuRegister(ushort address)
+    {
+        var realAddress = address & 0x2007;
+        switch (realAddress)
+        {
+            case 0x2000:
+            case 0x2001:
+            case 0x2003:
+            case 0x2005:
+            case 0x2006:
+                throw new InvalidOperationException("Attempted to read from a write only address");
+            case 0x2002:
+            case 0x2004:
+                Debug.Write($"Read from unimplemented PPU register {address:X4}");
+                return 0;
+            case 0x2007:
+                return ppu.PpuData;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(address), address, "Not a ppu address");
         }
     }
 
@@ -62,17 +90,46 @@ public class NesBus : IBus
     {
         switch (address)
         {
-            case >= RamStart and < RamMirrorsEnd:
+            case >= RamStart and <= RamMirrorsEnd:
             {
                 var realAddress = (ushort)(address & RamEnd);
                 mainRam[realAddress] = value;
                 break;
             }
-            
+            case >= PpuRegisterStart and <= PpuRegisterMirrorsEnd:
+                WritePpuRegister(address, value);
+                break;
+
             case > RomStart:
             {
                 throw new InvalidOperationException($"Tried to write to ROM address {address}");
             }
+        }
+    }
+
+    private void WritePpuRegister(ushort address, byte value)
+    {
+        var realAddress = address & 0x2007;
+        switch (realAddress)
+        {
+            case 0x2000:
+                ppu.ControlRegister = (Ppu.ControlRegisterFlags)value;
+                return;
+            case 0x2006:
+                ppu.PpuAddr = value;
+                return;
+            case 0x2001:
+            case 0x2003:
+            case 0x2005:
+            case 0x2002:
+            case 0x2004:
+                Debug.Write($"Write to unimplemented PPU register {address:X4}");
+                return;
+            case 0x2007:
+                ppu.PpuData = value;
+                return;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(address), address, "Not a ppu address");
         }
     }
 
