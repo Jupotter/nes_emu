@@ -2,17 +2,18 @@ namespace NesEmu.Test;
 
 public class PpuShould
 {
-    public static readonly ushort[] TestVRamAddresses = [0x2000, 0x2001, 0x20ff, 0x2100];
+    public static readonly ushort[] TestVRamAddresses = [0x2000, 0x2001, 0x20ff, 0x2100, 0x2400, 0x2401, 0x24ff];
+    public static readonly ushort[] TestVRamAddressesHorizontal = [0x2000, 0x2001, 0x20ff, 0x2100, 0x2800, 0x2801, 0x28ff];
     public static readonly ushort[] TestChrRomAddresses = [0x000, 0x0001, 0x00ff, 0x0100, 0x0101, 0x1fff];
 
     [Test]
-    public void ReadDataFromVRamAddress([ValueSource(typeof(PpuShould), nameof(TestVRamAddresses))] ushort address)
+    public void ReadDataFromVRamAddressVertical([ValueSource(typeof(PpuShould), nameof(TestVRamAddresses))] ushort address)
     {
         var tested = new Ppu();
 
         tested.VRamWrite(address, 0xDE);
 
-        tested.PpuAddr = (byte)((0xff00 & address) >> 8);
+        tested.PpuAddr = (byte)(address >> 8);
         tested.PpuAddr = (byte)address;
         var discard = tested.PpuData;
         var result = tested.PpuData;
@@ -21,7 +22,7 @@ public class PpuShould
     }
 
     [Test]
-    public void ReadDataFromVRamAddressMirrored([ValueSource(typeof(PpuShould), nameof(TestVRamAddresses))] ushort address)
+    public void ReadDataFromVRamAddressMirroredVertical([ValueSource(typeof(PpuShould), nameof(TestVRamAddresses))] ushort address)
     {
         var tested = new Ppu();
 
@@ -29,6 +30,40 @@ public class PpuShould
 
         tested.PpuAddr = (byte)((address >> 8) + 0x8);
         tested.PpuAddr = (byte)address;
+        var discard = tested.PpuData;
+        var result = tested.PpuData;
+        result.Should().Be(0xDE);
+        discard.Should().Be(0x00);
+    }
+    
+    [Test]
+    public void ReadDataFromVRamAddressHorizontal([ValueSource(typeof(PpuShould), nameof(TestVRamAddressesHorizontal))] ushort address)
+    {
+        var tested = new Ppu();
+        tested.Load(new Rom(Array.Empty<byte>(), Array.Empty<byte>(), 0, ScreenMirroring.Horizontal));
+
+        tested.VRamWrite(address, 0xDE);
+
+        tested.PpuAddr = (byte)(address >> 8);
+        tested.PpuAddr = (byte)address;
+        var discard = tested.PpuData;
+        var result = tested.PpuData;
+        result.Should().Be(0xDE);
+        discard.Should().Be(0x00);
+    }
+
+    [Test]
+    public void ReadDataFromVRamAddressMirroredHorizontal([ValueSource(typeof(PpuShould), nameof(TestVRamAddressesHorizontal))] ushort address)
+    {
+        var tested = new Ppu();
+        tested.Load(new Rom(Array.Empty<byte>(), Array.Empty<byte>(), 0, ScreenMirroring.Horizontal));
+
+        tested.VRamWrite(address, 0xDE);
+
+        var readAddress = (ushort)(address + 0x400);
+
+        tested.PpuAddr = (byte)(readAddress >> 8);
+        tested.PpuAddr = (byte)readAddress;
         var discard = tested.PpuData;
         var result = tested.PpuData;
         result.Should().Be(0xDE);

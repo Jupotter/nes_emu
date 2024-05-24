@@ -25,7 +25,7 @@ public class Ppu
     private ScreenMirroring mirroring = ScreenMirroring.Vertical;
 
     private readonly AddressRegister addressRegister = new();
-    
+
     public ControlRegisterFlags ControlRegister { get; set; }
 
     public byte PpuAddr
@@ -45,28 +45,30 @@ public class Ppu
             IncrementAddress();
             return Read(address);
         }
-        set { 
+        set
+        {
             var address = addressRegister.Value;
             IncrementAddress();
-            Write(address, value); 
+            Write(address, value);
         }
     }
 
-    public void IncrementAddress()
+    private void IncrementAddress()
     {
         addressRegister.Increment(HasFlag(ControlRegisterFlags.VRamAddIncrement) ? (byte)32 : (byte)1);
     }
 
     public void VRamWrite(ushort address, byte value)
     {
-        vRam[address - 0x2000] = value;
+        address = GetMirroredVRamAddress(address);
+        vRam[address] = value;
     }
 
     public void PaletteWrite(byte address, byte value)
     {
         paletteTable[address] = value;
     }
-    
+
 
     private byte Read(ushort address)
     {
@@ -101,7 +103,8 @@ public class Ppu
             case < 0x2000:
                 return ChrRomRead(address);
             case >= 0x2000 and < 0x3f00:
-                return VRamRead(address);;
+                return VRamRead(address);
+                ;
             case >= 0x3f00 and < 0x3fff:
                 return paletteTable[(address - 0x3f00)];
             default:
@@ -109,7 +112,7 @@ public class Ppu
                 return 0;
         }
     }
-    
+
     private void Write(ushort address, byte value)
     {
         switch (address)
@@ -129,16 +132,48 @@ public class Ppu
         }
     }
 
-    private byte ChrRomRead(int address)
+    private byte ChrRomRead(ushort address)
     {
         return chrRom.Length == 0 ? (byte)0 : chrRom[address];
     }
 
-    private byte VRamRead(int address)
+    private byte VRamRead(ushort address)
     {
-        return vRam[address % 0x800];
+        address = GetMirroredVRamAddress(address);
+        return vRam[address];
     }
-    
+
+    /// <summary>
+    /// Convert a Ppu bus address into a mirrored vram address depending on the screen mirroring configuration
+    /// </summary>
+    /// VRam:
+    ///   [ A ] 0x0000
+    ///   [ B ] 0x0400
+    ///
+    /// Screen: 
+    /// Horizontal:
+    ///   [ A ] 0x2000 [ a ] 0x2400
+    ///   [ B ] 0x2800 [ b ] 0x2c00
+    /// Vertical:
+    ///   [ A ] [ B ] 
+    ///   [ a ] [ b ]
+    private ushort GetMirroredVRamAddress(ushort address)
+    {
+        var mirrored = address & 0x2fff; // mirror down 0x3000-0x3eff to 0x2000 - 0x2eff
+        var vRamIndex = mirrored - 0x2000;
+        var nameTableNum = vRamIndex / 0x400;
+
+        return (ushort)((mirroring, nameTableNum) switch
+        {
+            (ScreenMirroring.Vertical, 2) => vRamIndex - 0x800,
+            (ScreenMirroring.Vertical, 3) => vRamIndex - 0x800,
+            (ScreenMirroring.Horizontal, 1) => vRamIndex - 0x400,
+            (ScreenMirroring.Horizontal, 2) => vRamIndex - 0x400,
+            (ScreenMirroring.Horizontal, 3) => vRamIndex - 0x800,
+            _ => vRamIndex
+        });
+    }
+
     public void Load(Rom rom)
     {
         chrRom = rom.ChrRom;
