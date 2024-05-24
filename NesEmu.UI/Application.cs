@@ -19,6 +19,8 @@ public class Application
         this.emulator = emulator;
         cpuWindow = new CpuWindow(emulator.CPU);
         displayedElements.Add(cpuWindow);
+        displayedElements.Add(new PpuWindow(emulator.Ppu));
+        
     }
     
     public void NewFrame()

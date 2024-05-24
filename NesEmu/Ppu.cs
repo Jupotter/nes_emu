@@ -88,6 +88,27 @@ public class Ppu
                 return 0;
         }
     }
+
+    public byte DebugRead()
+    {
+        return DirectRead(addressRegister.Value);
+    }
+
+    public byte DirectRead(ushort address)
+    {
+        switch (address)
+        {
+            case < 0x2000:
+                return ChrRomRead(address);
+            case >= 0x2000 and < 0x3f00:
+                return VRamRead(address);;
+            case >= 0x3f00 and < 0x3fff:
+                return paletteTable[(address - 0x3f00)];
+            default:
+                Debug.Write($"Tried to read from unsupported address {address}");
+                return 0;
+        }
+    }
     
     private void Write(ushort address, byte value)
     {
