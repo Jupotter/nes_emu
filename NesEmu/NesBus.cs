@@ -68,9 +68,9 @@ public class NesBus : IBus
             case 0x2006:
                 throw new InvalidOperationException("Attempted to read from a write only address");
             case 0x2002:
+                return (byte)ppu.PpuStatus;
             case 0x2004:
-                Debug.Write($"Read from unimplemented PPU register {address:X4}");
-                return 0;
+                return ppu.OamData;
             case 0x2007:
                 return ppu.PpuData;
             default:
@@ -115,19 +115,26 @@ public class NesBus : IBus
             case 0x2000:
                 ppu.ControlRegister = (Ppu.ControlRegisterFlags)value;
                 return;
+            case 0x2001:
+                ppu.PpuMask = (Ppu.MaskRegisterFlags)value;
+                return;
             case 0x2006:
                 ppu.PpuAddr = value;
                 return;
-            case 0x2001:
             case 0x2003:
-            case 0x2005:
-            case 0x2002:
+                ppu.OamAddr = value;
+                return;
             case 0x2004:
-                Debug.Write($"Write to unimplemented PPU register {address:X4}");
+                ppu.OamData = value;
+                return;
+            case 0x2005:
+                ppu.PpuScroll = value;
                 return;
             case 0x2007:
                 ppu.PpuData = value;
                 return;
+            case 0x2002:
+                throw new InvalidOperationException($"Attempted write to read only PPU Register {address}");
             default:
                 throw new ArgumentOutOfRangeException(nameof(address), address, "Not a ppu address");
         }

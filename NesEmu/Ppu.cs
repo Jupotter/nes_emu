@@ -18,6 +18,29 @@ public class Ppu
         GenerateNmi = 0b10000000,
     }
 
+    [Flags]
+    public enum MaskRegisterFlags : byte
+    {
+        None = 0,
+        Greyscale = 1 << 0,
+        ShowBackgroundLeft = 1 << 1,
+        ShowSpritesLeft = 1 << 2,
+        ShowBackground = 1 << 3,
+        ShowSprites = 1 << 4,
+        EmphasizeRed = 1 << 5,
+        EmphasizeGreen = 1 << 6,
+        EmphasizeBlue = 1 << 7,
+    }
+
+    [Flags]
+    public enum StatusRegisterFlags : byte
+    {
+        VBlank = 1 << 7,
+        Sprite0Hit = 1 << 6,
+        SpriteOverflow = 1 << 5,
+        Unused = 0b0001_1111,
+    }
+
     private ImmutableArray<byte> chrRom = ImmutableArray<byte>.Empty;
     private readonly byte[] paletteTable = new byte[32];
     private readonly byte[] vRam = new byte[2048];
@@ -27,6 +50,46 @@ public class Ppu
     private readonly AddressRegister addressRegister = new();
 
     public ControlRegisterFlags ControlRegister { get; set; }
+    public MaskRegisterFlags PpuMask { get; set; }
+
+    public StatusRegisterFlags PpuStatus
+    {
+        get
+        {
+            var value = ppuStatus;
+            ppuStatus &= ~StatusRegisterFlags.VBlank;
+            addressRegister.WriteLatch = true;
+            return value;
+        }
+        private set => ppuStatus = value;
+    }
+
+    public byte OamAddr { get; set; }
+
+    public byte OamData
+    {
+        get => oamData[OamAddr];
+        set => oamData[OamAddr] = value;
+    }
+
+    private byte scrollX;
+    private byte scrollY;
+
+    public byte PpuScroll
+    {
+        set
+        {
+            if (addressRegister.WriteLatch)
+            {
+                scrollX = value;
+            }
+            else
+            {
+                scrollY = value;
+            }
+            addressRegister.WriteLatch = !addressRegister.WriteLatch;
+        }
+    }
 
     public byte PpuAddr
     {
@@ -36,6 +99,7 @@ public class Ppu
     public ushort ReadAddress => addressRegister.Value;
 
     private byte memBuffer = 0;
+    private StatusRegisterFlags ppuStatus;
 
     public byte PpuData
     {
@@ -55,7 +119,7 @@ public class Ppu
 
     private void IncrementAddress()
     {
-        addressRegister.Increment(HasFlag(ControlRegisterFlags.VRamAddIncrement) ? (byte)32 : (byte)1);
+        addressRegister.Increment(ControlRegister.HasFlag(ControlRegisterFlags.VRamAddIncrement) ? (byte)32 : (byte)1);
     }
 
     public void VRamWrite(ushort address, byte value)
@@ -180,18 +244,12 @@ public class Ppu
         mirroring = rom.Mirroring;
     }
 
-    private bool HasFlag(ControlRegisterFlags flag)
-    {
-        return (ControlRegister & flag) != 0;
-    }
-
-
     private class AddressRegister
     {
         private byte valueHi;
         private byte valueLo;
 
-        private bool updateHi = true;
+        public bool WriteLatch { get; set; } = true;
 
         public ushort Value
         {
@@ -205,7 +263,7 @@ public class Ppu
 
         public void Update(byte value)
         {
-            if (updateHi)
+            if (WriteLatch)
             {
                 valueHi = value;
             }
@@ -219,7 +277,7 @@ public class Ppu
                 Value &= 0b11111111111111;
             }
 
-            updateHi = !updateHi;
+            WriteLatch = !WriteLatch;
         }
 
         public void Increment(byte increment)
