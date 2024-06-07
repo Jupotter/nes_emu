@@ -4,22 +4,31 @@ public class Emulator
 {
     public Ppu Ppu;
     public IBus Bus { get; }
-    public Cpu CPU { get; }
+    public Cpu Cpu { get; }
+    public Rom Rom { get; private set; }
 
     private bool running = false;
-    
+
     public static Emulator Initialize()
+    {
+        return new Emulator();
+    }
+
+    private Emulator()
     {
         var ppu = new Ppu();
         var bus = new NesBus(Rom.Empty, ppu);
         var cpu = new Cpu(bus);
-        return new Emulator(cpu, bus, ppu);
+        Ppu = ppu;
+        Cpu = cpu;
+        Bus = bus;
+        Rom = Rom.Empty;
     }
 
-    private Emulator(Cpu cpu, IBus bus, Ppu ppu)
+    public void LoadRom(Rom rom)
     {
-        Ppu = ppu;
-        CPU = cpu;
-        Bus = bus;
+        Rom = rom;
+        Bus.Load(rom);
+        Cpu.Reset();
     }
 }

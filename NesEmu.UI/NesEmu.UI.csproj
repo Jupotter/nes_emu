@@ -24,7 +24,7 @@
 
 
     <ItemGroup>
-      <None Update="Roms\snake.nes">
+      <None Update="Roms\**">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

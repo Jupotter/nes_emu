@@ -53,6 +53,7 @@ public class ImGuiWindow : IDisposable
         device.Initialize();
         
         SDL_SetWindowTitle(window, "NesEmu");
+        application.Initialize();
 
         while (true)
         {
