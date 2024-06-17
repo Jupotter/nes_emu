@@ -10,6 +10,7 @@ public interface IBus
     void Load(ushort address, byte[] data);
 
     void Load(Rom newRom);
+    bool CanDebugRead(ushort address);
 }
 
 public class NesBus : IBus
@@ -31,6 +32,18 @@ public class NesBus : IBus
         this.ppu = ppu;
     }
 
+    public bool CanDebugRead(ushort address)
+    {
+        return address switch
+        {
+            >= RamStart and <= RamMirrorsEnd => true,
+            >= PpuRegisterStart and <= PpuRegisterMirrorsEnd => false,
+            0x4014 => false,
+            > RomStart => true,
+            _ => false
+        };
+    }
+    
     public byte MemRead(ushort address)
     {
         switch (address)

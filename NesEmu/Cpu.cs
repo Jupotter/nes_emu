@@ -370,7 +370,8 @@ public class Cpu(IBus bus)
         };
         if (instruction.AddressingMode == AddressingMode.Absolute &&
             instruction.Name != "JMP" &&
-            instruction.Name != "JSR")
+            instruction.Name != "JSR" &&
+            bus.CanDebugRead(address))
         {
             parameter += $" = {MemReadByte(address):X2}";
         }
