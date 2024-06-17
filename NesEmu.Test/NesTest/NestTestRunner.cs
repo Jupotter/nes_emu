@@ -71,7 +71,7 @@ public class NestTestRunner
         cpu.Reset();
 
         cpu.SetPc(0xc000);
-        var nesTestLog = LoadNestTestLog().Select(l => l[..73]).ToList();
+        var nesTestLog = LoadNestTestLog().Select(l => l[..73] + " PPU  0,  0 " + l[86..]).ToList();
 
         foreach (var t in nesTestLog.TakeWhile(t => !t.StartsWith("C68B")))
         {

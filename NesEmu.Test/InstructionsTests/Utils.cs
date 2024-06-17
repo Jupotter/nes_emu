@@ -62,6 +62,11 @@ public class Utils
             throw new NotImplementedException();
         }
 
+        public bool CanDebugRead(ushort address)
+        {
+            return true;
+        }
+
         public void LoadRom(byte[] data)
         {
             data.CopyTo(memory, 0x8000);

@@ -31,4 +31,9 @@ public class Emulator
         Bus.Load(rom);
         Cpu.Reset();
     }
+
+    public void Step()
+    {
+        
+    }
 }

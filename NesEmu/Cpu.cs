@@ -1,4 +1,5 @@
 // ReSharper disable InconsistentNaming Using instruction names as method names
+
 namespace NesEmu;
 
 [Flags]
@@ -215,93 +216,93 @@ public class Cpu(IBus bus)
         new(0x2C, "BIT", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.BIT(mode)),
         // Illegal Opcodes
         // NOP
-        new(0x04, "*NOP", 2, 99, AddressingMode.ZeroPage, (_, _) => { }),
-        new(0x44, "*NOP", 2, 99, AddressingMode.ZeroPage, (_, _) => { }),
-        new(0x64, "*NOP", 2, 99, AddressingMode.ZeroPage, (_, _) => { }),
-        new(0x0C, "*NOP", 3, 99, AddressingMode.Absolute, (_, _) => { }),
-        new(0x14, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
-        new(0x34, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
-        new(0x54, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
-        new(0x74, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
-        new(0xD4, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
-        new(0xF4, "*NOP", 2, 99, AddressingMode.ZeroPage_X, (_, _) => { }),
-        new(0x1A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
-        new(0x3A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
-        new(0x5A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
-        new(0x7A, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
-        new(0xDA, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
-        new(0xFA, "*NOP", 1, 99, AddressingMode.NoAddressing, (_, _) => { }),
-        new(0x80, "*NOP", 2, 99, AddressingMode.Immediate, (_, _) => { }),
-        new(0x1C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
-        new(0x3C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
-        new(0x5C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
-        new(0x7C, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
-        new(0xDC, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
-        new(0xFC, "*NOP", 3, 99, AddressingMode.Absolute_X, (_, _) => { }),
+        new(0x04, "*NOP", 2, 3, AddressingMode.ZeroPage, (_, _) => { }),
+        new(0x44, "*NOP", 2, 3, AddressingMode.ZeroPage, (_, _) => { }),
+        new(0x64, "*NOP", 2, 3, AddressingMode.ZeroPage, (_, _) => { }),
+        new(0x0C, "*NOP", 3, 4, AddressingMode.Absolute, (_, _) => { }),
+        new(0x14, "*NOP", 2, 4, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x34, "*NOP", 2, 4, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x54, "*NOP", 2, 4, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x74, "*NOP", 2, 4, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0xD4, "*NOP", 2, 4, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0xF4, "*NOP", 2, 4, AddressingMode.ZeroPage_X, (_, _) => { }),
+        new(0x1A, "*NOP", 1, 2, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x3A, "*NOP", 1, 2, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x5A, "*NOP", 1, 2, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x7A, "*NOP", 1, 2, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0xDA, "*NOP", 1, 2, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0xFA, "*NOP", 1, 2, AddressingMode.NoAddressing, (_, _) => { }),
+        new(0x80, "*NOP", 2, 2, AddressingMode.Immediate, (_, _) => { }),
+        new(0x1C, "*NOP", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.GetOperandAddress(mode, true)),
+        new(0x3C, "*NOP", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.GetOperandAddress(mode, true)),
+        new(0x5C, "*NOP", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.GetOperandAddress(mode, true)),
+        new(0x7C, "*NOP", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.GetOperandAddress(mode, true)),
+        new(0xDC, "*NOP", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.GetOperandAddress(mode, true)),
+        new(0xFC, "*NOP", 3, 4, AddressingMode.Absolute_X, (cpu, mode) => cpu.GetOperandAddress(mode, true)),
         // LAX
-        new(0xA3, "*LAX", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.LAX(mode)),
-        new(0xA7, "*LAX", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.LAX(mode)),
-        new(0xAF, "*LAX", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.LAX(mode)),
-        new(0xB3, "*LAX", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.LAX(mode)),
-        new(0xB7, "*LAX", 2, 99, AddressingMode.ZeroPage_Y, (cpu, mode) => cpu.LAX(mode)),
-        new(0xBF, "*LAX", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.LAX(mode)),
+        new(0xA3, "*LAX", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.LAX(mode)),
+        new(0xA7, "*LAX", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.LAX(mode)),
+        new(0xAF, "*LAX", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.LAX(mode)),
+        new(0xB3, "*LAX", 2, 5, AddressingMode.Indirect_Y, (cpu, mode) => cpu.LAX(mode)),
+        new(0xB7, "*LAX", 2, 4, AddressingMode.ZeroPage_Y, (cpu, mode) => cpu.LAX(mode)),
+        new(0xBF, "*LAX", 3, 4, AddressingMode.Absolute_Y, (cpu, mode) => cpu.LAX(mode)),
         // SAX
-        new(0x83, "*SAX", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.SAX(mode)),
-        new(0x87, "*SAX", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.SAX(mode)),
-        new(0x8F, "*SAX", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.SAX(mode)),
-        new(0x93, "*SAX", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SAX(mode)),
-        new(0x97, "*SAX", 2, 99, AddressingMode.ZeroPage_Y, (cpu, mode) => cpu.SAX(mode)),
-        new(0x9F, "*SAX", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SAX(mode)),
+        new(0x83, "*SAX", 2, 6, AddressingMode.Indirect_X, (cpu, mode) => cpu.SAX(mode)),
+        new(0x87, "*SAX", 2, 3, AddressingMode.ZeroPage, (cpu, mode) => cpu.SAX(mode)),
+        new(0x8F, "*SAX", 3, 4, AddressingMode.Absolute, (cpu, mode) => cpu.SAX(mode)),
+        new(0x93, "*SAX", 2, 6, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SAX(mode)),
+        new(0x97, "*SAX", 2, 4, AddressingMode.ZeroPage_Y, (cpu, mode) => cpu.SAX(mode)),
+        new(0x9F, "*SAX", 3, 5, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SAX(mode)),
         // SBC
-        new(0xEB, "*SBC", 2, 99, AddressingMode.Immediate, (cpu, mode) => cpu.SBC(mode)),
+        new(0xEB, "*SBC", 2, 2, AddressingMode.Immediate, (cpu, mode) => cpu.SBC(mode)),
         // DCP
-        new(0xC3, "*DCP", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.DCP(mode)),
-        new(0xC7, "*DCP", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.DCP(mode)),
-        new(0xCF, "*DCP", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.DCP(mode)),
-        new(0xD3, "*DCP", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.DCP(mode)),
-        new(0xD7, "*DCP", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.DCP(mode)),
-        new(0xDB, "*DCP", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.DCP(mode)),
-        new(0xDF, "*DCP", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.DCP(mode)),
+        new(0xC3, "*DCP", 2, 8, AddressingMode.Indirect_X, (cpu, mode) => cpu.DCP(mode)),
+        new(0xC7, "*DCP", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.DCP(mode)),
+        new(0xCF, "*DCP", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.DCP(mode)),
+        new(0xD3, "*DCP", 2, 8, AddressingMode.Indirect_Y, (cpu, mode) => cpu.DCP(mode)),
+        new(0xD7, "*DCP", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.DCP(mode)),
+        new(0xDB, "*DCP", 3, 7, AddressingMode.Absolute_Y, (cpu, mode) => cpu.DCP(mode)),
+        new(0xDF, "*DCP", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.DCP(mode)),
         // ISB/C
-        new(0xE3, "*ISB", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.ISC(mode)),
-        new(0xE7, "*ISB", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.ISC(mode)),
-        new(0xEF, "*ISB", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.ISC(mode)),
-        new(0xF3, "*ISB", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.ISC(mode)),
-        new(0xF7, "*ISB", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ISC(mode)),
-        new(0xFB, "*ISB", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.ISC(mode)),
-        new(0xFF, "*ISB", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.ISC(mode)),
+        new(0xE3, "*ISB", 2, 8, AddressingMode.Indirect_X, (cpu, mode) => cpu.ISC(mode)),
+        new(0xE7, "*ISB", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.ISC(mode)),
+        new(0xEF, "*ISB", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.ISC(mode)),
+        new(0xF3, "*ISB", 2, 8, AddressingMode.Indirect_Y, (cpu, mode) => cpu.ISC(mode)),
+        new(0xF7, "*ISB", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.ISC(mode)),
+        new(0xFB, "*ISB", 3, 7, AddressingMode.Absolute_Y, (cpu, mode) => cpu.ISC(mode)),
+        new(0xFF, "*ISB", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.ISC(mode)),
         // SLO
-        new(0x03, "*SLO", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.SLO(mode)),
-        new(0x07, "*SLO", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.SLO(mode)),
-        new(0x0F, "*SLO", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.SLO(mode)),
-        new(0x13, "*SLO", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SLO(mode)),
-        new(0x17, "*SLO", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.SLO(mode)),
-        new(0x1B, "*SLO", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SLO(mode)),
-        new(0x1F, "*SLO", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.SLO(mode)),
+        new(0x03, "*SLO", 2, 8, AddressingMode.Indirect_X, (cpu, mode) => cpu.SLO(mode)),
+        new(0x07, "*SLO", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.SLO(mode)),
+        new(0x0F, "*SLO", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.SLO(mode)),
+        new(0x13, "*SLO", 2, 8, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SLO(mode)),
+        new(0x17, "*SLO", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.SLO(mode)),
+        new(0x1B, "*SLO", 3, 7, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SLO(mode)),
+        new(0x1F, "*SLO", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.SLO(mode)),
         // RLA
-        new(0x23, "*RLA", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.RLA(mode)),
-        new(0x27, "*RLA", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.RLA(mode)),
-        new(0x2F, "*RLA", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.RLA(mode)),
-        new(0x33, "*RLA", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.RLA(mode)),
-        new(0x37, "*RLA", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.RLA(mode)),
-        new(0x3B, "*RLA", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.RLA(mode)),
-        new(0x3F, "*RLA", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.RLA(mode)),
+        new(0x23, "*RLA", 2, 8, AddressingMode.Indirect_X, (cpu, mode) => cpu.RLA(mode)),
+        new(0x27, "*RLA", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.RLA(mode)),
+        new(0x2F, "*RLA", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.RLA(mode)),
+        new(0x33, "*RLA", 2, 8, AddressingMode.Indirect_Y, (cpu, mode) => cpu.RLA(mode)),
+        new(0x37, "*RLA", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.RLA(mode)),
+        new(0x3B, "*RLA", 3, 7, AddressingMode.Absolute_Y, (cpu, mode) => cpu.RLA(mode)),
+        new(0x3F, "*RLA", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.RLA(mode)),
         // SRE
-        new(0x43, "*SRE", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.SRE(mode)),
-        new(0x47, "*SRE", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.SRE(mode)),
-        new(0x4F, "*SRE", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.SRE(mode)),
-        new(0x53, "*SRE", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SRE(mode)),
-        new(0x57, "*SRE", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.SRE(mode)),
-        new(0x5B, "*SRE", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SRE(mode)),
-        new(0x5F, "*SRE", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.SRE(mode)),
+        new(0x43, "*SRE", 2, 8, AddressingMode.Indirect_X, (cpu, mode) => cpu.SRE(mode)),
+        new(0x47, "*SRE", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.SRE(mode)),
+        new(0x4F, "*SRE", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.SRE(mode)),
+        new(0x53, "*SRE", 2, 8, AddressingMode.Indirect_Y, (cpu, mode) => cpu.SRE(mode)),
+        new(0x57, "*SRE", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.SRE(mode)),
+        new(0x5B, "*SRE", 3, 7, AddressingMode.Absolute_Y, (cpu, mode) => cpu.SRE(mode)),
+        new(0x5F, "*SRE", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.SRE(mode)),
         // RRA
-        new(0x63, "*RRA", 2, 99, AddressingMode.Indirect_X, (cpu, mode) => cpu.RRA(mode)),
-        new(0x67, "*RRA", 2, 99, AddressingMode.ZeroPage, (cpu, mode) => cpu.RRA(mode)),
-        new(0x6F, "*RRA", 3, 99, AddressingMode.Absolute, (cpu, mode) => cpu.RRA(mode)),
-        new(0x73, "*RRA", 2, 99, AddressingMode.Indirect_Y, (cpu, mode) => cpu.RRA(mode)),
-        new(0x77, "*RRA", 2, 99, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.RRA(mode)),
-        new(0x7B, "*RRA", 3, 99, AddressingMode.Absolute_Y, (cpu, mode) => cpu.RRA(mode)),
-        new(0x7F, "*RRA", 3, 99, AddressingMode.Absolute_X, (cpu, mode) => cpu.RRA(mode)),
+        new(0x63, "*RRA", 2, 8, AddressingMode.Indirect_X, (cpu, mode) => cpu.RRA(mode)),
+        new(0x67, "*RRA", 2, 5, AddressingMode.ZeroPage, (cpu, mode) => cpu.RRA(mode)),
+        new(0x6F, "*RRA", 3, 6, AddressingMode.Absolute, (cpu, mode) => cpu.RRA(mode)),
+        new(0x73, "*RRA", 2, 8, AddressingMode.Indirect_Y, (cpu, mode) => cpu.RRA(mode)),
+        new(0x77, "*RRA", 2, 6, AddressingMode.ZeroPage_X, (cpu, mode) => cpu.RRA(mode)),
+        new(0x7B, "*RRA", 3, 7, AddressingMode.Absolute_Y, (cpu, mode) => cpu.RRA(mode)),
+        new(0x7F, "*RRA", 3, 7, AddressingMode.Absolute_X, (cpu, mode) => cpu.RRA(mode)),
     }.ToDictionary(x => x.Opcode);
 
     private ushort programCounter;
@@ -318,6 +319,10 @@ public class Cpu(IBus bus)
     public byte RegisterS => registerS;
     public CpuFlags Status => status;
 
+    public int Cycle { get; private set; } = 0;
+
+    private bool crossedBoundary = false;
+
     public ushort PC
     {
         get => programCounter;
@@ -331,7 +336,7 @@ public class Cpu(IBus bus)
         var bytesFormatted = string.Join(" ", bytes.Select(x => x.ToString("X2"))).PadRight(8);
         var instructionStr = PrintOpcodeWithParameters(instruction, bytes).PadRight(31);
         return
-            $"{PC:X4}  {bytesFormatted} {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status:X2} SP:{RegisterS:X2}";
+            $"{PC:X4}  {bytesFormatted} {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status:X2} SP:{RegisterS:X2} PPU  0,  0 CYC:{Cycle}";
     }
 
     private IReadOnlyList<byte> GetInstructionBytes(Instruction instruction, ushort address)
@@ -406,6 +411,7 @@ public class Cpu(IBus bus)
         status = CpuFlags.InterruptDisable | CpuFlags.Unused;
 
         PC = MemReadShort(0xFFFC);
+        Cycle = 7;
     }
 
     public Instruction GetInstruction(ushort address)
@@ -431,6 +437,8 @@ public class Cpu(IBus bus)
         // check if we jumped during the action
         if (PC == pcBefore)
             PC += (ushort)(opcode.Byte - 1);
+
+        Cycle += opcode.Cycles;
         return false;
     }
 
@@ -443,17 +451,17 @@ public class Cpu(IBus bus)
         }
     }
 
-    private void ADC(AddressingMode mode)
+    private void ADC(AddressingMode mode, bool addCycle = true)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, addCycle);
         var param = MemReadByte(address);
 
         ADCImpl(param);
     }
 
-    private void SBC(AddressingMode mode)
+    private void SBC(AddressingMode mode, bool addCycle = true)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, addCycle);
         var param = MemReadByte(address);
 
         ADCImpl((byte)~param);
@@ -474,36 +482,36 @@ public class Cpu(IBus bus)
         UpdateZeroAndNegativeFlags(registerA);
     }
 
-    private void AND(AddressingMode mode)
+    private void AND(AddressingMode mode, bool addCycle = true)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, addCycle);
         var param = MemReadByte(address);
 
         registerA &= param;
         UpdateZeroAndNegativeFlags(registerA);
     }
 
-    private void EOR(AddressingMode mode)
+    private void EOR(AddressingMode mode, bool addCycle = true)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, addCycle);
         var param = MemReadByte(address);
 
         registerA ^= param;
         UpdateZeroAndNegativeFlags(registerA);
     }
 
-    private void ORA(AddressingMode mode)
+    private void ORA(AddressingMode mode, bool addCycle = true)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, addCycle);
         var param = MemReadByte(address);
 
         registerA |= param;
         UpdateZeroAndNegativeFlags(registerA);
     }
 
-    private void CMP(AddressingMode mode, byte register)
+    private void CMP(AddressingMode mode, byte register, bool addCycle = true)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, addCycle);
         var param = MemReadByte(address);
 
         var value = register - param;
@@ -619,7 +627,7 @@ public class Cpu(IBus bus)
 
     private void LDA(AddressingMode mode)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, true);
         var param = MemReadByte(address);
 
         registerA = param;
@@ -628,7 +636,7 @@ public class Cpu(IBus bus)
 
     private void LDX(AddressingMode mode)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, true);
         var param = MemReadByte(address);
 
         registerX = param;
@@ -637,7 +645,7 @@ public class Cpu(IBus bus)
 
     private void LDY(AddressingMode mode)
     {
-        var address = GetOperandAddress(mode);
+        var address = GetOperandAddress(mode, true);
         var param = MemReadByte(address);
 
         registerY = param;
@@ -647,7 +655,8 @@ public class Cpu(IBus bus)
     private void LAX(AddressingMode mode)
     {
         LDA(mode);
-        LDX(mode);
+        registerX = registerA;
+        UpdateZeroAndNegativeFlags(registerX);
     }
 
     private void STA(AddressingMode mode)
@@ -750,7 +759,9 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (!TestFlag(CpuFlags.Carry))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
     }
 
     private void BCS()
@@ -759,7 +770,9 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (TestFlag(CpuFlags.Carry))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
     }
 
     private void BEQ()
@@ -768,7 +781,9 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (TestFlag(CpuFlags.Zero))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
     }
 
     private void BNE()
@@ -777,7 +792,9 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (!TestFlag(CpuFlags.Zero))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
     }
 
     private void BMI()
@@ -786,7 +803,9 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (TestFlag(CpuFlags.Negative))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
     }
 
     private void BPL()
@@ -795,7 +814,9 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (!TestFlag(CpuFlags.Negative))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
     }
 
     private void BVC()
@@ -804,7 +825,9 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (!TestFlag(CpuFlags.Overflow))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
     }
 
     private void BVS()
@@ -813,7 +836,20 @@ public class Cpu(IBus bus)
         var value = (sbyte)MemReadByte(address);
 
         if (TestFlag(CpuFlags.Overflow))
-            PC = (ushort)(PC + value + 1);
+        {
+            TakeBranch(value);
+        }
+    }
+    
+    private void TakeBranch(sbyte value)
+    {
+        var pcBefore = PC + 1;
+        PC = (ushort)(PC + value + 1);
+        Cycle += 1;
+        if (value < 0)
+            AddCycleIfPageBoundaryCrossed(PC, pcBefore);
+        else
+            AddCycleIfPageBoundaryCrossed(pcBefore, PC);
     }
 
     private void JMP(AddressingMode mode)
@@ -898,37 +934,37 @@ public class Cpu(IBus bus)
     private void DCP(AddressingMode mode)
     {
         DEC(mode);
-        CMP(mode, registerA);
+        CMP(mode, registerA, false);
     }
 
     private void ISC(AddressingMode mode)
     {
         INC(mode);
-        SBC(mode);
+        SBC(mode, false);
     }
 
     private void SLO(AddressingMode mode)
     {
         ASL(mode);
-        ORA(mode);
+        ORA(mode, false);
     }
 
     private void RLA(AddressingMode mode)
     {
         ROL(mode);
-        AND(mode);
+        AND(mode, false);
     }
 
     private void SRE(AddressingMode mode)
     {
         LSR(mode);
-        EOR(mode);
+        EOR(mode, false);
     }
 
     private void RRA(AddressingMode mode)
     {
         ROR(mode);
-        ADC(mode);
+        ADC(mode, false);
     }
 
     private void UpdateZeroAndNegativeFlags(byte value)
@@ -1030,12 +1066,12 @@ public class Cpu(IBus bus)
     }
 
 
-    private ushort GetOperandAddress(AddressingMode mode)
+    private ushort GetOperandAddress(AddressingMode mode, bool addCycle = false)
     {
-        return GetOperandAddress(mode, PC);
+        return GetOperandAddress(mode, PC, addCycle);
     }
 
-    private ushort GetOperandAddress(AddressingMode mode, ushort position)
+    private ushort GetOperandAddress(AddressingMode mode, ushort position, bool addCycle = false)
     {
         return mode switch
         {
@@ -1045,8 +1081,8 @@ public class Cpu(IBus bus)
             AddressingMode.Absolute => MemReadShort(position),
             AddressingMode.ZeroPage_X => (byte)(MemReadByte(position) + registerX),
             AddressingMode.ZeroPage_Y => (byte)(MemReadByte(position) + registerY),
-            AddressingMode.Absolute_X => (ushort)(MemReadShort(position) + registerX),
-            AddressingMode.Absolute_Y => (ushort)(MemReadShort(position) + registerY),
+            AddressingMode.Absolute_X => Absolute(registerX),
+            AddressingMode.Absolute_Y => Absolute(registerY),
             AddressingMode.Indirect => ReadIndirectJmpAddress(MemReadShort(position)),
             AddressingMode.Indirect_X
                 => ReadIndirectX(MemReadByte(position)),
@@ -1054,29 +1090,48 @@ public class Cpu(IBus bus)
                 => ReadIndirectY(MemReadByte(position)),
             AddressingMode.NoAddressing
                 => throw new InvalidOperationException($"Mode {mode} is not supported"),
+            AddressingMode.Accumulator
+                => throw new InvalidOperationException($"Mode {mode} is not supported"),
             _ => throw new ArgumentOutOfRangeException(nameof(mode)),
         };
+
+        ushort Absolute(byte register)
+        {
+            var baseAddr = MemReadShort(position);
+            var target = (ushort)(baseAddr + register);
+            if (addCycle)
+                AddCycleIfPageBoundaryCrossed(baseAddr, target);
+            return target;
+        }
+
+        ushort ReadIndirectX(byte operand)
+        {
+            return MemReadShortZeroPage(operand + registerX);
+        }
+
+        ushort ReadIndirectY(byte operand)
+        {
+            var baseAddr = MemReadShortZeroPage(operand);
+            var target = (ushort)(baseAddr + registerY);
+            if (addCycle)
+                AddCycleIfPageBoundaryCrossed(baseAddr, target);
+            return target;
+        }
+
+        ushort ReadIndirectJmpAddress(ushort lowAddress)
+        {
+            var lo = MemReadByte(lowAddress);
+            // Add 1 but wrap around page boundary
+            var highAddress = (ushort)(0xFF00 & lowAddress | 0x00FF & lowAddress + 1);
+            var hi = MemReadByte(highAddress);
+            return (ushort)(hi << 8 | lo);
+        }
     }
 
-
-    private ushort ReadIndirectX(byte operand)
+    private void AddCycleIfPageBoundaryCrossed(int before, int after)
     {
-        return MemReadShortZeroPage(operand + registerX);
-    }
-
-    private ushort ReadIndirectY(byte operand)
-    {
-        var address = MemReadShortZeroPage(operand);
-        return (ushort)(address + registerY);
-    }
-
-    private ushort ReadIndirectJmpAddress(ushort lowAddress)
-    {
-        var lo = MemReadByte(lowAddress);
-        // Add 1 but wrap around page boundary
-        var highAddress = (ushort)(0xFF00 & lowAddress | 0x00FF & lowAddress + 1);
-        var hi = MemReadByte(highAddress);
-        return (ushort)(hi << 8 | lo);
+        if (after % 0x100 < before % 0x100)
+            Cycle += 1;
     }
 
     public void SetPc(ushort value)
