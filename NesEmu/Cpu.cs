@@ -391,7 +391,12 @@ public class Cpu(IBus bus)
     {
         Load(program, 0x8000);
         Reset(0x8000);
-        Run();
+        
+        var brk = false;
+        while (!brk)
+        {
+            (brk, _) = Step();
+        }
     }
 
     private void Load(byte[] rom, ushort location)
@@ -446,13 +451,13 @@ public class Cpu(IBus bus)
         return (false, cycle);
     }
 
-    public void Run()
+    public void InterruptNmi()
     {
-        var brk = false;
-        while (!brk)
-        {
-            (brk, _) = Step();
-        }
+        StackPush(PC);
+        PHP();
+        
+        SetFlag(CpuFlags.InterruptDisable);
+        PC = MemReadShort(0xfffA);
     }
 
     private void ADC(AddressingMode mode, bool addCycle = true)
@@ -1014,6 +1019,14 @@ public class Cpu(IBus bus)
         bus.MemWrite(address, value);
     }
 
+    private void StackPush(ushort value)
+    {
+        var high = (byte)(value >> 8);
+        var low = (byte)value;
+        MemWriteByte((ushort)(0x100 + registerS--), high);
+        MemWriteByte((ushort)(0x100 + registerS--), low);
+    }
+    
     private void StackPush(byte value)
     {
         MemWriteByte((ushort)(0x100 + registerS--), value);

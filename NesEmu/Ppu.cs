@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace NesEmu;
 
@@ -117,6 +118,8 @@ public class Ppu
         }
     }
 
+    public event Action? GenerateNmi;
+    
     private void IncrementAddress()
     {
         addressRegister.Increment(ControlRegister.HasFlag(ControlRegisterFlags.VRamAddIncrement) ? (byte)32 : (byte)1);
@@ -238,10 +241,45 @@ public class Ppu
         });
     }
 
+    public void Steps(int cycles)
+    {
+        Cycles += cycles;
+        if (Cycles < 341)
+        {
+            return;
+        }
+        
+        Cycles -= 341;
+        ScanLine += 1;
+
+        if (ScanLine == 241 && ControlRegister.HasFlag(ControlRegisterFlags.GenerateNmi))
+        {
+            PpuStatus |= StatusRegisterFlags.VBlank;
+            GenerateNmi?.Invoke();
+        }
+
+        if (ScanLine >= 262)
+        {
+            Frame += 1;
+            ScanLine = 0;
+            PpuStatus &= ~StatusRegisterFlags.VBlank;
+        }
+    }
+    
+    public int Cycles { get; private set; }
+    public int ScanLine { get; private set; }
+    public int Frame { get; private set; }
+
     public void Load(Rom rom)
     {
         chrRom = rom.ChrRom;
         mirroring = rom.Mirroring;
+    }
+    
+    
+    public string GetTrace()
+    {
+        return $"PPU:{ScanLine,3},{Cycles,3}";
     }
 
     private class AddressRegister
@@ -294,10 +332,5 @@ public class Ppu
                 Value &= 0b11111111111111;
             }
         }
-    }
-
-    public string GetTrace()
-    {
-        return "PPU  0,  0";
     }
 }

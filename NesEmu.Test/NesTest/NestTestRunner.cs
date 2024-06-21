@@ -70,7 +70,7 @@ public class NestTestRunner
         emulator.LoadRom(LoadNestTestRom());
         emulator.Cpu.SetPc(0xc000);
 
-        var nesTestLog = LoadNestTestLog().Select(l => l[..73] + " PPU  0,  0 " + l[86..]).ToList();
+        var nesTestLog = LoadNestTestLog();
 
         foreach (var t in nesTestLog.TakeWhile(t => !t.StartsWith("C68B")))
         {

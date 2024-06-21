@@ -25,6 +25,7 @@ public class Emulator
         Cpu = cpu;
         Bus = bus;
         Rom = Rom.Empty;
+        ppu.GenerateNmi += InterruptCpuHandler;
     }
 
     public void LoadRom(Rom rom)
@@ -45,15 +46,28 @@ public class Emulator
     public void Reset()
     {
         Cpu.Reset();
-        Cycles = 7;
+        Cycles = 0;
+        RunCycles(7);
     }
     
     public bool Step()
     {
         var (brk, cycles) = Cpu.Step();
 
-        Cycles += cycles;
+        RunCycles(cycles);
         
         return brk;
+    }
+
+    private void RunCycles(int cycles)
+    {
+        Ppu.Steps(cycles*3);
+        Cycles += cycles;
+    }
+
+    private void InterruptCpuHandler()
+    {
+        Cpu.InterruptNmi();
+        RunCycles(2);
     }
 }
