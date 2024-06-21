@@ -4,13 +4,13 @@ namespace NesEmu.UI;
 
 public class CpuWindow: IElement
 {
-    private readonly Cpu cpu;
+    private readonly Emulator emulator;
     private bool running = false;
     private int stepPerFrame = 50;
 
-    public CpuWindow(Cpu cpu)
+    public CpuWindow(Emulator emulator)
     {
-        this.cpu = cpu;
+        this.emulator = emulator;
     }
 
     public void NewFrame()
@@ -19,24 +19,24 @@ public class CpuWindow: IElement
         {
             for (var i = 0; i < stepPerFrame; i++)
             {
-                running = !cpu.Step();
+                running = !emulator.Step();
             }
         }
 
         if (!ImGui.Begin("CPU Control"))
             return;
 
-        ImGui.Text(cpu.ToString());
+        ImGui.Text(emulator.GetTrace());
 
         ImGui.BeginDisabled(running);
         if (ImGui.Button("Reset"))
         {
-            cpu.Reset();
+            emulator.Reset();
         }
         ImGui.SameLine();
         if (ImGui.Button("Step"))
         {
-            cpu.Step();
+            emulator.Step();
         }
         ImGui.EndDisabled();
         ImGui.SameLine();

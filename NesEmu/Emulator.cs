@@ -7,8 +7,10 @@ public class Emulator
     public Cpu Cpu { get; }
     public Rom Rom { get; private set; }
 
-    private bool running = false;
+    public int Cycles { get; private set; } = 7;
 
+    private bool running = false;
+    
     public static Emulator Initialize()
     {
         return new Emulator();
@@ -29,11 +31,29 @@ public class Emulator
     {
         Rom = rom;
         Bus.Load(rom);
-        Cpu.Reset();
+        Reset();
     }
 
-    public void Step()
+    public string GetTrace()
     {
+        var cpuStatus = Cpu.GetTrace();
+        var ppuStatus = Ppu.GetTrace();
+
+        return $"{cpuStatus} {ppuStatus} CYC:{Cycles}";
+    }
+
+    public void Reset()
+    {
+        Cpu.Reset();
+        Cycles = 7;
+    }
+    
+    public bool Step()
+    {
+        var (brk, cycles) = Cpu.Step();
+
+        Cycles += cycles;
         
+        return brk;
     }
 }

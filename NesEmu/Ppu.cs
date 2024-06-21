@@ -295,4 +295,9 @@ public class Ppu
             }
         }
     }
+
+    public string GetTrace()
+    {
+        return "PPU  0,  0";
+    }
 }

@@ -31,11 +31,11 @@ public class NestTestRunner
         cpu.SetRegisterY(3);
         cpu.SetPc(0x64);
 
-        cpu.ToString().Should().Be("0064  A2 01     LDX #$01                        A:01 X:02 Y:03 P:24 SP:FD");
+        cpu.GetTrace().Should().Be("0064  A2 01     LDX #$01                        A:01 X:02 Y:03 P:24 SP:FD");
         cpu.Step();
-        cpu.ToString().Should().Be("0066  CA        DEX                             A:01 X:01 Y:03 P:24 SP:FD");
+        cpu.GetTrace().Should().Be("0066  CA        DEX                             A:01 X:01 Y:03 P:24 SP:FD");
         cpu.Step();
-        cpu.ToString().Should().Be("0067  88        DEY                             A:01 X:00 Y:03 P:26 SP:FD");
+        cpu.GetTrace().Should().Be("0067  88        DEY                             A:01 X:00 Y:03 P:26 SP:FD");
         cpu.Step();
     }
     
@@ -60,23 +60,22 @@ public class NestTestRunner
         cpu.SetRegisterY(0);
         cpu.SetPc(0x64);
 
-        cpu.ToString().Should().Be("0064  11 33     ORA ($33),Y = 0400 @ 0400 = AA  A:00 X:00 Y:00 P:24 SP:FD");
+        cpu.GetTrace().Should().Be("0064  11 33     ORA ($33),Y = 0400 @ 0400 = AA  A:00 X:00 Y:00 P:24 SP:FD");
     }
 
     [Test]
     public void RunNesTest()
     {
-        var bus = new NesBus(LoadNestTestRom(), new Ppu());
-        var cpu = new Cpu(bus);
-        cpu.Reset();
+        var emulator = Emulator.Initialize();
+        emulator.LoadRom(LoadNestTestRom());
+        emulator.Cpu.SetPc(0xc000);
 
-        cpu.SetPc(0xc000);
         var nesTestLog = LoadNestTestLog().Select(l => l[..73] + " PPU  0,  0 " + l[86..]).ToList();
 
         foreach (var t in nesTestLog.TakeWhile(t => !t.StartsWith("C68B")))
         {
-            cpu.ToString().Should().Be(t);
-            cpu.Step();
+            emulator.GetTrace().Should().Be(t);
+            emulator.Step();
         }
     }
 }

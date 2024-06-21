@@ -319,9 +319,7 @@ public class Cpu(IBus bus)
     public byte RegisterS => registerS;
     public CpuFlags Status => status;
 
-    public int Cycle { get; private set; } = 0;
-
-    private bool crossedBoundary = false;
+    private int cycle = 0;
 
     public ushort PC
     {
@@ -331,12 +329,17 @@ public class Cpu(IBus bus)
 
     public override string ToString()
     {
+        return GetTrace();
+    }
+
+    public string GetTrace()
+    {
         var instruction = GetInstruction(PC);
         var bytes = GetInstructionBytes(instruction, PC);
         var bytesFormatted = string.Join(" ", bytes.Select(x => x.ToString("X2"))).PadRight(8);
         var instructionStr = PrintOpcodeWithParameters(instruction, bytes).PadRight(31);
         return
-            $"{PC:X4}  {bytesFormatted} {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status:X2} SP:{RegisterS:X2} PPU  0,  0 CYC:{Cycle}";
+            $"{PC:X4}  {bytesFormatted} {instructionStr}  A:{RegisterA:X2} X:{RegisterX:X2} Y:{RegisterY:X2} P:{(int)Status:X2} SP:{RegisterS:X2}";
     }
 
     private IReadOnlyList<byte> GetInstructionBytes(Instruction instruction, ushort address)
@@ -411,7 +414,7 @@ public class Cpu(IBus bus)
         status = CpuFlags.InterruptDisable | CpuFlags.Unused;
 
         PC = MemReadShort(0xFFFC);
-        Cycle = 7;
+        cycle = 7;
     }
 
     public Instruction GetInstruction(ushort address)
@@ -424,13 +427,14 @@ public class Cpu(IBus bus)
         return opcode;
     }
 
-    public bool Step()
+    public (bool Break, int Cycles) Step()
     {
+        this.cycle = 0;
         var opcode = GetInstruction(PC++);
         var pcBefore = PC;
 
         if (opcode.Opcode == 0x00) // BRK
-            return true;
+            return (true, opcode.Cycles);
 
         opcode.Action(this, opcode.AddressingMode);
 
@@ -438,8 +442,8 @@ public class Cpu(IBus bus)
         if (PC == pcBefore)
             PC += (ushort)(opcode.Byte - 1);
 
-        Cycle += opcode.Cycles;
-        return false;
+        cycle += opcode.Cycles;
+        return (false, cycle);
     }
 
     public void Run()
@@ -447,7 +451,7 @@ public class Cpu(IBus bus)
         var brk = false;
         while (!brk)
         {
-            brk = Step();
+            (brk, _) = Step();
         }
     }
 
@@ -845,7 +849,7 @@ public class Cpu(IBus bus)
     {
         var pcBefore = PC + 1;
         PC = (ushort)(PC + value + 1);
-        Cycle += 1;
+        cycle += 1;
         if (value < 0)
             AddCycleIfPageBoundaryCrossed(PC, pcBefore);
         else
@@ -1131,7 +1135,7 @@ public class Cpu(IBus bus)
     private void AddCycleIfPageBoundaryCrossed(int before, int after)
     {
         if (after % 0x100 < before % 0x100)
-            Cycle += 1;
+            cycle += 1;
     }
 
     public void SetPc(ushort value)

@@ -16,7 +16,7 @@ public class Application
     public Application(Emulator emulator)
     {
         this.emulator = emulator;
-        var cpuWindow = new CpuWindow(emulator.Cpu);
+        var cpuWindow = new CpuWindow(emulator);
         displayedElements.Add(cpuWindow);
         displayedElements.Add(new PpuWindow(emulator.Ppu));
     }
