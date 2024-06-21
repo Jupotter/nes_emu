@@ -48,7 +48,6 @@ public class Ppu
     private readonly byte[] paletteTable = new byte[32];
     private readonly byte[] vRam = new byte[2048];
 
-
     private ImmutableArray<byte> chrRom = ImmutableArray<byte>.Empty;
 
     private byte memBuffer = 0;
@@ -306,7 +305,7 @@ public class Ppu
         bank = (ushort)(bank * 0x1000);
 
         var palette = GetBackgroundPalette(tileColumn, tileRow);
-        var tile = chrRom.Slice(bank + tileN * 16, 16);
+        var tile = chrRom.AsSpan(bank + tileN * 16, 16);
 
         for (int y = 0; y < 8; y++)
         {
@@ -333,7 +332,7 @@ public class Ppu
         }
     }
 
-    private byte[] GetBackgroundPalette(int tileCol, int tileRow)
+    private Span<byte> GetBackgroundPalette(int tileCol, int tileRow)
     {
         var attrTableIndex = tileRow / 4 * 8 + tileCol / 4;
         var attrByte = vRam[0x3c0 + attrTableIndex];
@@ -347,7 +346,7 @@ public class Ppu
         };
 
         var paletteStart = 1 + paletteIndex * 4;
-        return paletteTable[paletteStart..(paletteStart + 3)];
+        return paletteTable.AsSpan(paletteStart,3);
 
     }
     
