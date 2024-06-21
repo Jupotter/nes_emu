@@ -17,10 +17,12 @@ public class CpuWindow: IElement
     {
         if (running)
         {
-            for (var i = 0; i < stepPerFrame; i++)
+            var currentFrame = emulator.Ppu.FrameNumber;
+            var brk = false;
+            do
             {
-                running = !emulator.Step();
-            }
+                brk = emulator.Step();
+            } while (!brk && emulator.Ppu.FrameNumber == currentFrame);
         }
 
         if (!ImGui.Begin("CPU Control"))

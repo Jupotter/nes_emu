@@ -41,14 +41,24 @@ public class Ppu
         SpriteOverflow = 1 << 5,
         Unused = 0b0001_1111,
     }
+    
+    private readonly AddressRegister addressRegister = new();
 
-    private ImmutableArray<byte> chrRom = ImmutableArray<byte>.Empty;
+    private readonly byte[] oamData = new byte[256];
     private readonly byte[] paletteTable = new byte[32];
     private readonly byte[] vRam = new byte[2048];
-    private readonly byte[] oamData = new byte[256];
-    private ScreenMirroring mirroring = ScreenMirroring.Vertical;
 
-    private readonly AddressRegister addressRegister = new();
+
+    private ImmutableArray<byte> chrRom = ImmutableArray<byte>.Empty;
+
+    private byte memBuffer = 0;
+    private ScreenMirroring mirroring = ScreenMirroring.Vertical;
+    private StatusRegisterFlags ppuStatus;
+
+    private byte scrollX;
+    private byte scrollY;
+    
+    public Frame Frame { get; } = new ();
 
     public ControlRegisterFlags ControlRegister { get; set; }
     public MaskRegisterFlags PpuMask { get; set; }
@@ -73,9 +83,6 @@ public class Ppu
         set => oamData[OamAddr] = value;
     }
 
-    private byte scrollX;
-    private byte scrollY;
-
     public byte PpuScroll
     {
         set
@@ -99,9 +106,6 @@ public class Ppu
 
     public ushort ReadAddress => addressRegister.Value;
 
-    private byte memBuffer = 0;
-    private StatusRegisterFlags ppuStatus;
-
     public byte PpuData
     {
         get
@@ -118,8 +122,12 @@ public class Ppu
         }
     }
 
+    public int Cycles { get; private set; }
+    public int ScanLine { get; private set; }
+    public int FrameNumber { get; private set; }
+
     public event Action? GenerateNmi;
-    
+
     private void IncrementAddress()
     {
         addressRegister.Increment(ControlRegister.HasFlag(ControlRegisterFlags.VRamAddIncrement) ? (byte)32 : (byte)1);
@@ -248,34 +256,100 @@ public class Ppu
         {
             return;
         }
-        
+
         Cycles -= 341;
         ScanLine += 1;
 
-        if (ScanLine == 241 && ControlRegister.HasFlag(ControlRegisterFlags.GenerateNmi))
+        if (ScanLine == 241)
         {
             PpuStatus |= StatusRegisterFlags.VBlank;
-            GenerateNmi?.Invoke();
+            if (ControlRegister.HasFlag(ControlRegisterFlags.GenerateNmi))
+            {
+                RenderFrame();
+                GenerateNmi?.Invoke();
+            }
         }
 
         if (ScanLine >= 262)
         {
-            Frame += 1;
+            FrameNumber += 1;
             ScanLine = 0;
             PpuStatus &= ~StatusRegisterFlags.VBlank;
         }
     }
-    
-    public int Cycles { get; private set; }
-    public int ScanLine { get; private set; }
-    public int Frame { get; private set; }
 
     public void Load(Rom rom)
     {
         chrRom = rom.ChrRom;
         mirroring = rom.Mirroring;
     }
+
+    private void RenderFrame()
+    {
+        var bank = (ControlRegister & ControlRegisterFlags.BackgroundPatternAddr) == 0 ? 0 : 1;
+
+        for (int i = 0; i < 0x03c0; i++)
+        {
+            var tileNum = vRam[i];
+            var tileColumn = i % 32;
+            var tileRow = i / 32;
+            
+            DrawTile(bank, tileNum, tileColumn, tileRow);
+        }
+    }
     
+    private void DrawTile(int bank, ushort tileN, int tileColumn, int tileRow)
+    {
+        if (chrRom.Length == 0)
+            return;
+
+        bank = (ushort)(bank * 0x1000);
+
+        var palette = GetBackgroundPalette(tileColumn, tileRow);
+        var tile = chrRom.Slice(bank + tileN * 16, 16);
+
+        for (int y = 0; y < 8; y++)
+        {
+            var upper = tile[y];
+            var lower = tile[y + 8];
+            for (int x = 8 - 1; x >= 0; x--)
+            {
+                var value = (1 & lower) << 1 | (1 & upper);
+                upper >>= 1;
+                lower >>= 1;
+
+                Debug.Assert(value < 4, "Tile value should be between 0 and 4");
+                var rgb = value switch
+                {
+                    0 => Frame.SystemPalette[paletteTable[0]],
+                    1 => Frame.SystemPalette[palette[0]],
+                    2 => Frame.SystemPalette[palette[1]],
+                    3 => Frame.SystemPalette[palette[2]],
+                    _ => throw new InvalidOperationException("Tile value should be between 0 and 4")
+                };
+
+                Frame[tileRow * 8 + y, tileColumn * 8 + x] = new Frame.PaletteColor(rgb);
+            }
+        }
+    }
+
+    private byte[] GetBackgroundPalette(int tileCol, int tileRow)
+    {
+        var attrTableIndex = tileRow / 4 * 8 + tileCol / 4;
+        var attrByte = vRam[0x3c0 + attrTableIndex];
+        var paletteIndex = (tileCol % 4 / 2, tileRow % 4 / 2) switch
+        {
+            (0, 0) => attrByte & 0b11,
+            (1, 0) => (attrByte >> 2) & 0b11,
+            (0, 1) => (attrByte >> 4) & 0b11,
+            (1, 1) => (attrByte >> 6) & 0b11,
+            _ => throw new InvalidOperationException("Should not happen")
+        };
+
+        var paletteStart = 1 + paletteIndex * 4;
+        return paletteTable[paletteStart..(paletteStart + 3)];
+
+    }
     
     public string GetTrace()
     {

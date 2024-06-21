@@ -18,13 +18,13 @@ public class Application
         this.emulator = emulator;
         var cpuWindow = new CpuWindow(emulator);
         displayedElements.Add(cpuWindow);
-        displayedElements.Add(new PpuWindow(emulator.Ppu));
     }
 
     public void Initialize()
     {
         chrRomWindow = new ChrRomWindow(emulator);
         displayedElements.Add(chrRomWindow);
+        displayedElements.Add(new PpuWindow(emulator.Ppu));
     }
     
     public void NewFrame()
