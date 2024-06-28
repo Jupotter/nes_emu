@@ -31,9 +31,13 @@ public class Frame
     public const int Height = 240;
     private readonly PaletteColor[,] frameData = new PaletteColor[Height, Width];
 
-    public PaletteColor this[int x, int y]
+    public PaletteColor this[int row, int col]
     {
-        get => frameData[x, y];
-        set => frameData[x, y] = value;
+        get => frameData[row, col];
+        set
+        {
+            if (row >= Height || col >= Width) return;
+            frameData[row, col] = value;
+        }
     }
 }

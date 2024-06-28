@@ -41,7 +41,7 @@ public class Ppu
         SpriteOverflow = 1 << 5,
         Unused = 0b0001_1111,
     }
-    
+
     private readonly AddressRegister addressRegister = new();
 
     private readonly byte[] oamData = new byte[256];
@@ -56,8 +56,8 @@ public class Ppu
 
     private byte scrollX;
     private byte scrollY;
-    
-    public Frame Frame { get; } = new ();
+
+    public Frame Frame { get; } = new();
 
     public ControlRegisterFlags ControlRegister { get; set; }
     public MaskRegisterFlags PpuMask { get; set; }
@@ -292,11 +292,61 @@ public class Ppu
             var tileNum = vRam[i];
             var tileColumn = i % 32;
             var tileRow = i / 32;
-            
+
             DrawTile(bank, tileNum, tileColumn, tileRow);
         }
+
+        for (int i = 0; i < 64; i++)
+        {
+            DrawSprite(i);
+        }
     }
-    
+
+    private void DrawSprite(int spriteIdx)
+    {
+        var oamIndex = spriteIdx * 4;
+        var tileY = oamData[oamIndex];
+        var tileX = oamData[oamIndex + 3];
+        var tileN = oamData[oamIndex + 1];
+
+        var palette = GetSpritePalette(oamData[oamIndex + 2] & 0b11);
+        var bank = (ControlRegister & ControlRegisterFlags.SpritePatternAddr) == 0 ? 0 : 1;
+        bank = (ushort)(bank * 0x1000);
+
+        var flipVertical = (oamData[oamIndex + 2] >> 7 & 1) == 1;
+        var flipHorizontal = (oamData[oamIndex + 2] >> 6 & 1) == 1;
+
+        var tile = chrRom.AsSpan(bank + tileN * 16, 16);
+
+        for (int y = 0; y < 8; y++)
+        {
+            var upper = tile[y];
+            var lower = tile[y + 8];
+            for (int x = 8 - 1; x >= 0; x--)
+            {
+                var value = (1 & lower) << 1 | (1 & upper);
+                upper >>= 1;
+                lower >>= 1;
+
+                if (value == 0)
+                    continue;
+                Debug.Assert(value < 4, "Tile value should be between 0 and 4");
+                var rgb = value switch
+                {
+                    1 => Frame.SystemPalette[palette[0]],
+                    2 => Frame.SystemPalette[palette[1]],
+                    3 => Frame.SystemPalette[palette[2]],
+                    _ => throw new InvalidOperationException("Tile value should be between 0 and 4")
+                };
+
+                var drawX = flipHorizontal ? tileX + 7 - x : tileX + x;
+                var drawY = flipVertical ? tileY + 7 - y : tileY + y;
+
+                Frame[drawY, drawX] = new Frame.PaletteColor(rgb);
+            }
+        }
+    }
+
     private void DrawTile(int bank, ushort tileN, int tileColumn, int tileRow)
     {
         if (chrRom.Length == 0)
@@ -304,8 +354,8 @@ public class Ppu
 
         bank = (ushort)(bank * 0x1000);
 
-        var palette = GetBackgroundPalette(tileColumn, tileRow);
         var tile = chrRom.AsSpan(bank + tileN * 16, 16);
+        var palette = GetBackgroundPalette(tileColumn, tileRow);
 
         for (int y = 0; y < 8; y++)
         {
@@ -346,10 +396,15 @@ public class Ppu
         };
 
         var paletteStart = 1 + paletteIndex * 4;
-        return paletteTable.AsSpan(paletteStart,3);
-
+        return paletteTable.AsSpan(paletteStart, 3);
     }
-    
+
+    private Span<byte> GetSpritePalette(int paletteIdx)
+    {
+        var paletteStart = 0x11 + (paletteIdx * 4);
+        return paletteTable.AsSpan(paletteStart, 3);
+    }
+
     public string GetTrace()
     {
         return $"PPU:{ScanLine,3},{Cycles,3}";
@@ -405,5 +460,10 @@ public class Ppu
                 Value &= 0b11111111111111;
             }
         }
+    }
+
+    public void WriteOamDma(Span<byte> ramPage)
+    {
+        ramPage.CopyTo(oamData);
     }
 }

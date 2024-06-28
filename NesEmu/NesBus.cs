@@ -112,6 +112,9 @@ public class NesBus : IBus
             case >= PpuRegisterStart and <= PpuRegisterMirrorsEnd:
                 WritePpuRegister(address, value);
                 break;
+            case 0x4014:
+                ppu.WriteOamDma(mainRam.AsSpan(value << 8, 0xff));
+                break;
 
             case > RomStart:
             {
