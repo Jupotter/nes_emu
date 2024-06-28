@@ -12,12 +12,15 @@ public class Application
 
     private readonly List<IElement> displayedElements = [];
     private ChrRomWindow? chrRomWindow;
+    private readonly RomInfoWindow romInfoWindow;
 
     public Application(Emulator emulator)
     {
         this.emulator = emulator;
         var cpuWindow = new CpuWindow(emulator);
         displayedElements.Add(cpuWindow);
+        romInfoWindow = new RomInfoWindow();
+        displayedElements.Add(romInfoWindow);
     }
 
     public void Initialize()
@@ -62,19 +65,23 @@ public class Application
 
     private void LoadSnake()
     {
-        var snakeRom = File.ReadAllBytes("Roms/snake.nes"); 
-        
-        emulator.LoadRom(Rom.Parse(snakeRom));
+        var snakeRom = File.ReadAllBytes("Roms/snake.nes");
+
+        var rom = Rom.Parse(snakeRom);
+        emulator.LoadRom(rom);
         emulator.Cpu.MemWriteByte(0xff, 0x77);
         emulator.Cpu.Reset();
         
         displayedElements.Add(new SnakeDisplay(emulator));
+
+        romInfoWindow.Rom = rom;
     }
 
-    private void LoadFile(FileInfo file)
+    private void LoadFile(FileSystemInfo file)
     {
         var romBytes = File.ReadAllBytes(file.FullName);
         var rom = Rom.Parse(romBytes);
+        romInfoWindow.Rom = rom;
         emulator.LoadRom(rom);
         
         chrRomWindow?.UpdateRom(rom);
