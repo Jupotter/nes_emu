@@ -6,6 +6,9 @@ public class Emulator
     public IBus Bus { get; }
     public Cpu Cpu { get; }
     public Rom Rom { get; private set; }
+    
+    public Joypad Joypad1 { get; } = new Joypad();
+    public Joypad Joypad2 { get; } = new Joypad();
 
     public int Cycles { get; private set; } = 7;
 
@@ -25,6 +28,10 @@ public class Emulator
         Cpu = cpu;
         Bus = bus;
         Rom = Rom.Empty;
+
+        bus.Joypad1 = Joypad1;
+        bus.Joypad2 = Joypad2;
+        
         ppu.GenerateNmi += InterruptCpuHandler;
     }
 

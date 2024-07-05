@@ -61,6 +61,7 @@ public class ImGuiWindow : IDisposable
             while (SDL_PollEvent(out var e) != 0)
             {
                 if (IsQuitEvent(e)) return;
+                application.HandleSdlEvent(e);
                 device.ProcessEvent(e);
             }
 

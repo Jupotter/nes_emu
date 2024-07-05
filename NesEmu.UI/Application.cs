@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using ImGuiNET;
+using SDL2;
 
 namespace NesEmu.UI;
 
@@ -37,6 +38,43 @@ public class Application
         {
             element.NewFrame();
         }
+    }
+
+    private Dictionary<SDL.SDL_Keycode, Joypad.Button> keymap = new()
+    {
+        { SDL.SDL_Keycode.SDLK_DOWN, Joypad.Button.Down },
+        { SDL.SDL_Keycode.SDLK_UP, Joypad.Button.Up },
+        { SDL.SDL_Keycode.SDLK_LEFT, Joypad.Button.Left },
+        { SDL.SDL_Keycode.SDLK_RIGHT, Joypad.Button.Right },
+        { SDL.SDL_Keycode.SDLK_RETURN, Joypad.Button.Start },
+        { SDL.SDL_Keycode.SDLK_SPACE, Joypad.Button.Select },
+        { SDL.SDL_Keycode.SDLK_a, Joypad.Button.ButtonA },
+        { SDL.SDL_Keycode.SDLK_s, Joypad.Button.ButtonB },
+    };
+
+    public void HandleSdlEvent(in SDL.SDL_Event sdlEvent)
+    {
+        switch (sdlEvent.type)
+        {
+            case SDL.SDL_EventType.SDL_KEYUP:
+            case SDL.SDL_EventType.SDL_KEYDOWN:
+                HandleSdlKeyboard(sdlEvent.key);
+                return;
+            default:
+                return;
+        }
+    }
+    
+    private void HandleSdlKeyboard(in SDL.SDL_KeyboardEvent keyboardEvent)
+    {
+        var keycode = keyboardEvent.keysym.sym;
+
+        if (keymap.TryGetValue(keycode, out var button))
+        {
+            var pressed = keyboardEvent.type == SDL.SDL_EventType.SDL_KEYDOWN;
+            emulator.Joypad1.SetButtonStatus(button, pressed);
+        }
+
     }
 
     private void ShowMenu()

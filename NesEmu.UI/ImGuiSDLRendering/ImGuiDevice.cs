@@ -280,6 +280,7 @@ public sealed unsafe class ImGuiDevice : IDisposable
 		io.AddKeyEvent(ImGuiKey.ModSuper, (key.mod & SDL_Keymod.KMOD_GUI) != 0);
 
 		io.AddKeyEvent(SDL_KeycodeToImGuiKey(key.sym), down);
+		
 	}
 
 	void ProcessWindowEvent(in SDL_WindowEvent windowEvent)
@@ -344,7 +345,6 @@ public sealed unsafe class ImGuiDevice : IDisposable
 
 	void UpdateMouseCursor()
 	{
-		return;
 		if ((io.ConfigFlags & ImGuiConfigFlags.NoMouseCursorChange) != 0) return;
 
 		ImGuiMouseCursor cursor = ImGui.GetMouseCursor();

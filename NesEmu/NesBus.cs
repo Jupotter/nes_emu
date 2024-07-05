@@ -25,6 +25,9 @@ public class NesBus : IBus
     private readonly byte[] mainRam = new byte[0x800];
     private Rom rom;
     private readonly Ppu ppu;
+    
+    public Joypad? Joypad1 { get; set; }
+    public Joypad? Joypad2 { get; set; }
 
     public NesBus(Rom rom, Ppu ppu)
     {
@@ -60,6 +63,10 @@ public class NesBus : IBus
             }
             case 0x4014:
                 throw new InvalidOperationException("Attempted to read from a write only address");
+            case 0x4016:
+                return Joypad1?.Read() ?? 0;
+            case 0x4017:
+                return Joypad2?.Read() ?? 0;
             case > RomStart:
             {
                 return ReadPrgRom(address);
@@ -114,6 +121,12 @@ public class NesBus : IBus
                 break;
             case 0x4014:
                 ppu.WriteOamDma(mainRam.AsSpan(value << 8, 0xff));
+                break;
+            case 0x4016:
+                Joypad1?.Write(value);
+                break;
+            case 0x4017:
+                Joypad2?.Write(value);
                 break;
 
             case > RomStart:
