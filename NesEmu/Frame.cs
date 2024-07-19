@@ -7,7 +7,10 @@ public class Frame
         public PaletteColor((byte R, byte G, byte B) value) : this(value.R, value.G, value.B)
         {
         }
-    }
+
+        public PaletteColor(int index) : this(SystemPalette[index])
+        {}
+}
 
     public static readonly (byte R, byte G, byte B)[] SystemPalette =
     [

@@ -5,6 +5,10 @@ namespace NesEmu;
 
 public class Ppu
 {
+    public const ushort PaletteStart = 0x3f00;
+    public const ushort PaletteEnd = 0x3fff;
+    public const ushort VRamStart = 0x2000;
+
     [Flags]
     public enum ControlRegisterFlags : byte
     {
@@ -140,25 +144,47 @@ public class Ppu
 
     public void PaletteWrite(byte address, byte value)
     {
+        address = address switch
+        {
+            0x10 => 0x00,
+            0x14 => 0x04,
+            0x18 => 0x08,
+            0x1C => 0x0C,
+            _ => address,
+        };
+        
         paletteTable[address] = value;
     }
 
+    public byte PaletteRead(byte address)
+    {
+        address = (address % 0x20) switch
+        {
+            0x10 => 0x00,
+            0x14 => 0x04,
+            0x18 => 0x08,
+            0x1C => 0x0C,
+            var val => (byte)val,
+        };
 
+        return paletteTable[address];
+    }
+    
     private byte Read(ushort address)
     {
         byte val;
         switch (address)
         {
-            case < 0x2000:
+            case < VRamStart:
                 val = memBuffer;
                 memBuffer = ChrRomRead(address);
                 return val;
-            case >= 0x2000 and < 0x3f00:
+            case >= VRamStart and < PaletteStart:
                 val = memBuffer;
                 memBuffer = VRamRead(address);
                 return val;
-            case >= 0x3f00 and < 0x3fff:
-                return paletteTable[(address - 0x3f00)];
+            case >= PaletteStart and < PaletteEnd:
+                return PaletteRead((byte)(address - PaletteStart));
             default:
                 Debug.Write($"Tried to read from unsupported address {address}");
                 return 0;
@@ -174,13 +200,13 @@ public class Ppu
     {
         switch (address)
         {
-            case < 0x2000:
+            case < VRamStart:
                 return ChrRomRead(address);
-            case >= 0x2000 and < 0x3f00:
+            case >= VRamStart and < PaletteStart:
                 return VRamRead(address);
                 ;
-            case >= 0x3f00 and < 0x3fff:
-                return paletteTable[(address - 0x3f00)];
+            case >= PaletteStart and < PaletteEnd:
+                return PaletteRead((byte)(address - PaletteStart));
             default:
                 Debug.Write($"Tried to read from unsupported address {address}");
                 return 0;
@@ -191,14 +217,14 @@ public class Ppu
     {
         switch (address)
         {
-            case < 0x2000:
+            case < VRamStart:
                 Debug.Write($"Tried to write to CHR Rom address {address}");
                 return;
-            case >= 0x2000 and < 0x3f00:
+            case >= VRamStart and < PaletteStart:
                 VRamWrite(address, value);
                 break;
-            case >= 0x3f00 and < 0x3fff:
-                PaletteWrite((byte)(address - 0x3f00), value);
+            case >= PaletteStart and < PaletteEnd:
+                PaletteWrite((byte)((address - PaletteStart) % 32), value);
                 break;
             default:
                 Debug.Write($"Tried to write to unsupported {address}");
@@ -234,7 +260,7 @@ public class Ppu
     private ushort GetMirroredVRamAddress(ushort address)
     {
         var mirrored = address & 0x2fff; // mirror down 0x3000-0x3eff to 0x2000 - 0x2eff
-        var vRamIndex = mirrored - 0x2000;
+        var vRamIndex = mirrored - VRamStart;
         var nameTableNum = vRamIndex / 0x400;
 
         return (ushort)((mirroring, nameTableNum) switch
@@ -251,10 +277,17 @@ public class Ppu
     public void Steps(int cycles)
     {
         Cycles += cycles;
+
+        if (IsSprite0Hit(Cycles))
+        {
+            PpuStatus |= StatusRegisterFlags.Sprite0Hit;
+        }
+
         if (Cycles < 341)
         {
             return;
         }
+
 
         Cycles -= 341;
         ScanLine += 1;
@@ -262,6 +295,7 @@ public class Ppu
         if (ScanLine == 241)
         {
             PpuStatus |= StatusRegisterFlags.VBlank;
+            PpuStatus &= ~StatusRegisterFlags.Sprite0Hit;
             if (ControlRegister.HasFlag(ControlRegisterFlags.GenerateNmi))
             {
                 RenderFrame();
@@ -274,7 +308,16 @@ public class Ppu
             FrameNumber += 1;
             ScanLine = 0;
             PpuStatus &= ~StatusRegisterFlags.VBlank;
+            PpuStatus &= ~StatusRegisterFlags.Sprite0Hit;
         }
+    }
+
+    private bool IsSprite0Hit(int cycles)
+    {
+        var y = oamData[0];
+        var x = oamData[3];
+
+        return y == ScanLine && x <= cycles && PpuMask.HasFlag(MaskRegisterFlags.ShowSprites);
     }
 
     public void Load(Rom rom)
@@ -287,18 +330,23 @@ public class Ppu
     {
         var bank = (ControlRegister & ControlRegisterFlags.BackgroundPatternAddr) == 0 ? 0 : 1;
 
-        for (int i = 0; i < 0x03c0; i++)
+        if (PpuMask.HasFlag(MaskRegisterFlags.ShowBackground))
         {
-            var tileNum = vRam[i];
-            var tileColumn = i % 32;
-            var tileRow = i / 32;
+            for (int i = 0; i < 0x03c0; i++)
+            {
+                var tileNum = vRam[i];
+                var tileColumn = i % 32;
+                var tileRow = i / 32;
 
-            DrawTile(bank, tileNum, tileColumn, tileRow);
+                DrawTile(bank, tileNum, tileColumn, tileRow);
+            }
         }
-
-        for (int i = 0; i < 64; i++)
+        if (PpuMask.HasFlag(MaskRegisterFlags.ShowSprites))
         {
-            DrawSprite(i);
+            for (int i = 0; i < 64; i++)
+            {
+                DrawSprite(i);
+            }
         }
     }
 
@@ -438,7 +486,7 @@ public class Ppu
                 valueLo = value;
             }
 
-            if (Value > 0x3fff)
+            if (Value > PaletteEnd)
             {
                 Value &= 0b11111111111111;
             }

@@ -62,7 +62,7 @@ public class NesBus : IBus
                 return ReadPpuRegister(address);
             }
             case 0x4014:
-                throw new InvalidOperationException("Attempted to read from a write only address");
+                throw new InvalidOperationException($"Attempted to read from a write only address {address}");
             case 0x4016:
                 return Joypad1?.Read() ?? 0;
             case 0x4017:
@@ -86,7 +86,7 @@ public class NesBus : IBus
             case 0x2003:
             case 0x2005:
             case 0x2006:
-                throw new InvalidOperationException("Attempted to read from a write only address");
+                throw new InvalidOperationException($"Attempted to read from a write only address {address}");
             case 0x2002:
                 return (byte)ppu.PpuStatus;
             case 0x2004:
@@ -124,9 +124,9 @@ public class NesBus : IBus
                 break;
             case 0x4016:
                 Joypad1?.Write(value);
+                Joypad2?.Write(value);
                 break;
             case 0x4017:
-                Joypad2?.Write(value);
                 break;
 
             case > RomStart:

@@ -29,6 +29,7 @@ public class Application
         chrRomWindow = new ChrRomWindow(emulator);
         displayedElements.Add(chrRomWindow);
         displayedElements.Add(new PpuWindow(emulator.Ppu));
+        displayedElements.Add(new PaletteWindow(emulator.Ppu));
     }
     
     public void NewFrame()
@@ -84,6 +85,13 @@ public class Application
             if (ImGui.BeginMenu("Files"))
             {
                 var romsDirectory = new DirectoryInfo("Roms/NonFree");
+                foreach (var file in romsDirectory.GetFiles("*.nes"))
+                {
+                    if (ImGui.MenuItem(file.Name))
+                        LoadFile(file);
+                }
+                romsDirectory = new DirectoryInfo("Roms/TestRoms");
+                ImGui.Separator();
                 foreach (var file in romsDirectory.GetFiles("*.nes"))
                 {
                     if (ImGui.MenuItem(file.Name))

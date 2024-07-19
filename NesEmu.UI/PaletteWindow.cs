@@ -6,8 +6,12 @@ using SDL2;
 
 namespace NesEmu.UI;
 
-public class PpuWindow : IElement
+public class PaletteWindow : IElement
 {
+    private const int PaletteCount = 8;
+    private const int PixelPerColor = 16;
+    private const int ColorPerPalette = 4;
+
     private readonly IntPtr renderer;
     private readonly IntPtr texture;
 
@@ -15,18 +19,18 @@ public class PpuWindow : IElement
 
     private int lastFrameNumber = 0;
 
-    public PpuWindow(Ppu ppu)
+    public PaletteWindow(Ppu ppu)
     {
         renderer = ImGuiWindow.renderer;
         texture = SDL.SDL_CreateTexture(renderer, SDL.SDL_PIXELFORMAT_RGB24,
-            (int)SDL.SDL_TextureAccess.SDL_TEXTUREACCESS_TARGET, Frame.Width, Frame.Height);
+            (int)SDL.SDL_TextureAccess.SDL_TEXTUREACCESS_TARGET, ColorPerPalette * PixelPerColor, PaletteCount * PixelPerColor);
 
         this.ppu = ppu;
     }
 
     public void NewFrame()
     {
-        if (!ImGui.Begin("Pixel Processing Unit"))
+        if (!ImGui.Begin("Palette"))
             return;
 
         if (ppu.FrameNumber != lastFrameNumber)
@@ -35,25 +39,7 @@ public class PpuWindow : IElement
             lastFrameNumber = ppu.FrameNumber;
         }
 
-        ImGui.Image(texture, new Vector2(Frame.Width, Frame.Height));
-
-        ImGui.SameLine();
-
-        ImGui.BeginGroup();
-        {
-            ImGui.Value("Address", ppu.ReadAddress);
-            ImGui.Value("Value", ppu.DebugRead());
-            
-            ImGui.LabelText("Control", ppu.ControlRegister.ToString());
-
-            ImGui.Separator();
-
-            ImGui.Value("Cycle", ppu.Cycles);
-            ImGui.Value("Scanline", ppu.ScanLine);
-            ImGui.Value("Frame", ppu.FrameNumber);
-            ImGui.EndGroup();
-        }
-        ImGui.End();
+        ImGui.Image(texture, new Vector2(ColorPerPalette * PixelPerColor, PaletteCount * PixelPerColor));
     }
 
     private void RenderFrame()
@@ -62,14 +48,18 @@ public class PpuWindow : IElement
         SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255).ThrowOnError();
         SDL.SDL_RenderFillRect(renderer, IntPtr.Zero).ThrowOnError();
 
-        for (var i = 0; i < Frame.Width; i++)
+        var rect = new SDL.SDL_Rect { x = 0, y = 0, w = PixelPerColor, h = PixelPerColor };
+        for (var i = 0; i < PaletteCount * ColorPerPalette; i++)
         {
-            for (var j = 0; j < Frame.Height; j++)
-            {
-                var color = PaletteToSDLColor(ppu.Frame[j, i]);
-                SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-                SDL.SDL_RenderDrawPoint(renderer, i, j);
-            }
+            var address = (ushort)(Ppu.PaletteStart + i);
+            var value = ppu.DirectRead(address);
+            
+            var paletteColor = new Frame.PaletteColor(value);
+            var color = PaletteToSDLColor(paletteColor);
+            SDL.SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+            rect.x = (i % ColorPerPalette) * PixelPerColor;
+            rect.y = (i / ColorPerPalette) * PixelPerColor;
+            SDL.SDL_RenderFillRect(renderer, ref rect);
         }
 
         SDL.SDL_SetRenderTarget(renderer, IntPtr.Zero).ThrowOnError();
