@@ -8,6 +8,8 @@ public class Ppu
     public const ushort PaletteStart = 0x3f00;
     public const ushort PaletteEnd = 0x3fff;
     public const ushort VRamStart = 0x2000;
+    private const int TileDataLength = 16;
+    private const int NameTableSize = 0x3c0;
 
     [Flags]
     public enum ControlRegisterFlags : byte
@@ -60,6 +62,10 @@ public class Ppu
 
     private byte scrollX;
     private byte scrollY;
+
+    public byte ScrollX => scrollX;
+    public byte ScrollY => scrollY;
+    public ScreenMirroring Mirroring => mirroring;
 
     public Frame Frame { get; } = new();
 
@@ -152,7 +158,7 @@ public class Ppu
             0x1C => 0x0C,
             _ => address,
         };
-        
+
         paletteTable[address] = value;
     }
 
@@ -169,7 +175,7 @@ public class Ppu
 
         return paletteTable[address];
     }
-    
+
     private byte Read(ushort address)
     {
         byte val;
@@ -263,7 +269,7 @@ public class Ppu
         var vRamIndex = mirrored - VRamStart;
         var nameTableNum = vRamIndex / 0x400;
 
-        return (ushort)((mirroring, nameTableNum) switch
+        return (ushort)((Mirroring, nameTableNum) switch
         {
             (ScreenMirroring.Vertical, 2) => vRamIndex - 0x800,
             (ScreenMirroring.Vertical, 3) => vRamIndex - 0x800,
@@ -326,21 +332,38 @@ public class Ppu
         mirroring = rom.Mirroring;
     }
 
+
     private void RenderFrame()
     {
-        var bank = (ControlRegister & ControlRegisterFlags.BackgroundPatternAddr) == 0 ? 0 : 1;
+        var bank = (ControlRegister & ControlRegisterFlags.BackgroundPatternAddr) == 0 ? 0 : 0x1000;
 
         if (PpuMask.HasFlag(MaskRegisterFlags.ShowBackground))
         {
-            for (int i = 0; i < 0x03c0; i++)
+            var nameTableAddress =
+                (int)(ControlRegister & (ControlRegisterFlags.NameTable1 | ControlRegisterFlags.NameTable2));
+            var (firstNameTable, secondNameTable) = (Mirroring, nameTableAddress) switch
             {
-                var tileNum = vRam[i];
-                var tileColumn = i % 32;
-                var tileRow = i / 32;
-
-                DrawTile(bank, tileNum, tileColumn, tileRow);
+                (ScreenMirroring.Vertical, 0) => (0, 0x400),
+                (ScreenMirroring.Vertical, 2) => (0, 0x400),
+                (ScreenMirroring.Vertical, 1) => (0x400, 0),
+                (ScreenMirroring.Vertical, 3) => (0x400, 0),
+                (ScreenMirroring.Horizontal, 0) => (0, 0x400),
+                (ScreenMirroring.Horizontal, 1) => (0, 0x400),
+                (ScreenMirroring.Horizontal, 2) => (0x400, 0),
+                (ScreenMirroring.Horizontal, 3) => (0x400, 0),
+                _ => throw new NotImplementedException(),
+            };
+            RenderNameTable((ushort)firstNameTable, -scrollX, -scrollY);
+            if (mirroring == ScreenMirroring.Vertical)
+            {
+                RenderNameTable((ushort)secondNameTable, 256 - scrollX, -scrollY);
+            }
+            else
+            {
+                RenderNameTable((ushort)secondNameTable, -scrollX, 240 - scrollY);
             }
         }
+
         if (PpuMask.HasFlag(MaskRegisterFlags.ShowSprites))
         {
             for (int i = 0; i < 64; i++)
@@ -364,7 +387,7 @@ public class Ppu
         var flipVertical = (oamData[oamIndex + 2] >> 7 & 1) == 1;
         var flipHorizontal = (oamData[oamIndex + 2] >> 6 & 1) == 1;
 
-        var tile = chrRom.AsSpan(bank + tileN * 16, 16);
+        var tile = chrRom.AsSpan(bank + tileN * TileDataLength, TileDataLength);
 
         for (int y = 0; y < 8; y++)
         {
@@ -395,15 +418,25 @@ public class Ppu
         }
     }
 
-    private void DrawTile(int bank, ushort tileN, int tileColumn, int tileRow)
+    private void RenderNameTable(ushort nameTableBase, int shiftX, int shiftY)
     {
-        if (chrRom.Length == 0)
-            return;
+        // nameTableBase = GetMirroredVRamAddress(nameTableBase);
+        var bank = (ControlRegister & ControlRegisterFlags.BackgroundPatternAddr) == 0 ? 0 : 0x1000;
 
-        bank = (ushort)(bank * 0x1000);
+        for (int i = 0; i < NameTableSize; i++)
+        {
+            var tileNum = vRam[nameTableBase + i];
+            var tileColumn = i % 32;
+            var tileRow = i / 32;
 
-        var tile = chrRom.AsSpan(bank + tileN * 16, 16);
-        var palette = GetBackgroundPalette(tileColumn, tileRow);
+            var palette = GetBackgroundPalette(nameTableBase, tileColumn, tileRow);
+            DrawTile(bank, tileNum, palette, tileColumn * 8 + shiftX, tileRow * 8 + shiftY);
+        }
+    }
+
+    private void DrawTile(int bank, ushort tileIndex, Span<byte> palette, int tileColumn, int tileRow)
+    {
+        var tile = chrRom.AsSpan(bank + tileIndex * TileDataLength, TileDataLength);
 
         for (int y = 0; y < 8; y++)
         {
@@ -411,6 +444,12 @@ public class Ppu
             var lower = tile[y + 8];
             for (int x = 8 - 1; x >= 0; x--)
             {
+                var pixelX = tileColumn + x;
+                var pixelY = tileRow + y;
+                if (0 > pixelX || pixelX >= Frame.Width
+                               || 0 > pixelY || pixelY >= Frame.Height)
+                    continue;
+
                 var value = (1 & lower) << 1 | (1 & upper);
                 upper >>= 1;
                 lower >>= 1;
@@ -425,15 +464,15 @@ public class Ppu
                     _ => throw new InvalidOperationException("Tile value should be between 0 and 4")
                 };
 
-                Frame[tileRow * 8 + y, tileColumn * 8 + x] = new Frame.PaletteColor(rgb);
+                Frame[pixelY, pixelX] = new Frame.PaletteColor(rgb);
             }
         }
     }
 
-    private Span<byte> GetBackgroundPalette(int tileCol, int tileRow)
+    private Span<byte> GetBackgroundPalette(int nameTableBase, int tileCol, int tileRow)
     {
         var attrTableIndex = tileRow / 4 * 8 + tileCol / 4;
-        var attrByte = vRam[0x3c0 + attrTableIndex];
+        var attrByte = vRam[nameTableBase + NameTableSize + attrTableIndex];
         var paletteIndex = (tileCol % 4 / 2, tileRow % 4 / 2) switch
         {
             (0, 0) => attrByte & 0b11,

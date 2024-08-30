@@ -86,6 +86,7 @@ public class NesBus : IBus
             case 0x2003:
             case 0x2005:
             case 0x2006:
+                return 0;
                 throw new InvalidOperationException($"Attempted to read from a write only address {address}");
             case 0x2002:
                 return (byte)ppu.PpuStatus;

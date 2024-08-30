@@ -51,6 +51,15 @@ public class PpuWindow : IElement
             ImGui.Value("Cycle", ppu.Cycles);
             ImGui.Value("Scanline", ppu.ScanLine);
             ImGui.Value("Frame", ppu.FrameNumber);
+            ImGui.Separator();
+            
+            ImGui.LabelText("Mask", ppu.PpuMask.ToString());
+            ImGui.LabelText("Status", ppu.PpuStatus.ToString());
+            
+            ImGui.Value("Scroll X", ppu.ScrollX);
+            ImGui.Value("Scroll Y", ppu.ScrollY);
+            ImGui.LabelText("ScreenMirroring", ppu.Mirroring.ToString());
+            
             ImGui.EndGroup();
         }
         ImGui.End();
