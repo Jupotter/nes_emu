@@ -15,6 +15,9 @@ public class Application
     private ChrRomWindow? chrRomWindow;
     private readonly RomInfoWindow romInfoWindow;
 
+    private AudioTester audioTester = new AudioTester();
+    private bool showAudioTester = false;
+
     public Application(Emulator emulator)
     {
         this.emulator = emulator;
@@ -39,6 +42,9 @@ public class Application
         {
             element.NewFrame();
         }
+        
+        if (showAudioTester)
+            audioTester.NewFrame();
     }
 
     private Dictionary<SDL.SDL_Keycode, Joypad.Button> keymap = new()
@@ -105,6 +111,12 @@ public class Application
                     LoadSnake();
                 ImGui.EndMenu();
             }
+            if (ImGui.BeginMenu("Windows"))
+            {
+                ImGui.MenuItem("Audio Test", null, ref showAudioTester);
+                ImGui.EndMenu();
+            }
+            
             ImGui.EndMainMenuBar();
         }
     }
