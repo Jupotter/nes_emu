@@ -17,7 +17,11 @@ public class AudioTester : IElement
     const int SampleRate = 44100;
     const int BufferSize = 4096;
 
-    private readonly IEnumerator<float> toneGenerator;
+    private bool active = false;
+
+    private float frequency = 440f;
+    private float volume = 0.8f;
+    private IEnumerator<float> toneGenerator;
 
     private SDL.SDL_AudioSpec spec;
 
@@ -31,7 +35,6 @@ public class AudioTester : IElement
             samples = BufferSize,
             callback = AudioCallback
         };
-        toneGenerator = Oscillator(SampleRate / 440f, 1f);
     }
 
     private void AudioCallback(IntPtr userdata, IntPtr stream, int len)
@@ -49,28 +52,37 @@ public class AudioTester : IElement
     public void NewFrame()
     {
         ImGui.Begin("Audio Test");
+        
+        ImGui.BeginDisabled(active);
+        ImGui.SliderFloat("Frequency", ref frequency, 110f, 880f);
+        ImGui.SliderFloat("Volume", ref volume, 0f, 1f);
 
         if (ImGui.Button("Beep"))
         {
             Beep();
         }
+        
+        ImGui.EndDisabled();
 
         ImGui.End();
     }
 
     private async void Beep()
     {
+        toneGenerator = Oscillator(SampleRate / frequency, volume);
         SDL.SDL_OpenAudio(ref spec, IntPtr.Zero).ThrowOnError();
+        active = true;
         SDL.SDL_PauseAudio(0);
 
         await Task.Delay(TimeSpan.FromSeconds(0.5));
         
         SDL.SDL_PauseAudio(1);
         SDL.SDL_CloseAudio();
+        active = false;
     }
 
     // ReSharper disable once IteratorNeverReturns
-    private IEnumerator<float> Oscillator(float rate, float volume)
+    private static IEnumerator<float> Oscillator(float rate, float volume)
     {
         var current = 0f;
         var step = (2f * MathF.PI) / rate;
