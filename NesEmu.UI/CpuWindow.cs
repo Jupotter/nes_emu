@@ -5,7 +5,7 @@ namespace NesEmu.UI;
 public class CpuWindow: IElement
 {
     private readonly Emulator emulator;
-    private bool running = false;
+    public bool Running { get; private set; } = false;
     private int stepPerFrame = 50;
 
     public CpuWindow(Emulator emulator)
@@ -15,45 +15,42 @@ public class CpuWindow: IElement
 
     public void NewFrame()
     {
-        if (running)
-        {
-            var currentFrame = emulator.Ppu.FrameNumber;
-            var brk = false;
-            do
-            {
-                brk = emulator.Step();
-            } while (!brk && emulator.Ppu.FrameNumber == currentFrame);
-        }
 
         if (!ImGui.Begin("CPU Control"))
             return;
 
-        ImGui.Text(emulator.GetTrace());
+        // ImGui.Text(emulator.GetTrace());
 
-        ImGui.BeginDisabled(running);
-        if (ImGui.Button("Reset"))
+        ImGui.BeginDisabled(Running);
         {
-            emulator.Reset();
+            if (ImGui.Button("Reset"))
+            {
+                emulator.Reset();
+            }
+            ImGui.SameLine();
+            ImGui.BeginDisabled();
+            {
+                if (ImGui.Button("Step"))
+                {
+                    // emulator.Step();
+                }
+                ImGui.EndDisabled();
+            }
+            ImGui.EndDisabled();
         }
         ImGui.SameLine();
-        if (ImGui.Button("Step"))
-        {
-            emulator.Step();
-        }
-        ImGui.EndDisabled();
-        ImGui.SameLine();
-        if (running)
+        if (Running)
         {
             if (ImGui.Button("Pause"))
             {
-                running = false;
+                Running = false;
             }
         }
         else
         {
             if (ImGui.Button("Run"))
             {
-                running = true;
+                Running = true;
             }
         }
 

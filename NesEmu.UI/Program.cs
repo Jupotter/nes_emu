@@ -1,4 +1,4 @@
-﻿using NesEmu.UI;
+using NesEmu.UI;
 using NesEmu.UI.ImGuiSDLRendering;
 
 var emulator = NesEmu.Emulator.Initialize();

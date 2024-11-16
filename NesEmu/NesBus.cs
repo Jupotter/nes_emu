@@ -1,4 +1,5 @@
 using System.Diagnostics;
+// ReSharper disable PatternIsRedundant
 
 namespace NesEmu;
 
@@ -20,19 +21,23 @@ public class NesBus : IBus
     private const ushort RamMirrorsEnd = 0x1FFF;
     private const ushort PpuRegisterStart = 0x2000;
     private const ushort PpuRegisterMirrorsEnd = 0x3fff;
+    private const ushort ApuRegistersStart = 0x4000;
+    private const ushort ApuRegistersEnd = 0x4013;
     private const ushort RomStart = 0x8000;
 
     private readonly byte[] mainRam = new byte[0x800];
     private Rom rom;
     private readonly Ppu ppu;
-    
+    private readonly Apu apu;
+
     public Joypad? Joypad1 { get; set; }
     public Joypad? Joypad2 { get; set; }
 
-    public NesBus(Rom rom, Ppu ppu)
+    public NesBus(Rom rom, Ppu ppu, Apu apu)
     {
         this.rom = rom;
         this.ppu = ppu;
+        this.apu = apu;
     }
 
     public bool CanDebugRead(ushort address)
@@ -120,14 +125,15 @@ public class NesBus : IBus
             case >= PpuRegisterStart and <= PpuRegisterMirrorsEnd:
                 WritePpuRegister(address, value);
                 break;
+            case >= ApuRegistersStart and <= ApuRegistersEnd or 0x4015 or 0x4017:
+                apu.Write(address, value);
+                break;
             case 0x4014:
                 ppu.WriteOamDma(mainRam.AsSpan(value << 8, 0xff));
                 break;
             case 0x4016:
                 Joypad1?.Write(value);
                 Joypad2?.Write(value);
-                break;
-            case 0x4017:
                 break;
 
             case > RomStart:

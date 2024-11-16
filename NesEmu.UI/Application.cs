@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using ImGuiNET;
+using NesEmu.UI.ImGuiSDLRendering;
 using SDL2;
 
 namespace NesEmu.UI;
 
-public class Application
+public class Application : IDisposable
 {
     private readonly Emulator emulator;
 
@@ -15,16 +18,34 @@ public class Application
     private ChrRomWindow? chrRomWindow;
     private readonly RomInfoWindow romInfoWindow;
 
-    private AudioTester audioTester = new AudioTester();
-    private bool showAudioTester = false;
+    const int SampleRate = 44100;
+    const int BufferSize = 512;
+
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+    // Required to avoid the callback being garbage collected
+    private readonly SDL.SDL_AudioCallback audioCallback;
 
     public Application(Emulator emulator)
     {
+        audioCallback = UpdateAudio;
         this.emulator = emulator;
-        var cpuWindow = new CpuWindow(emulator);
+        cpuWindow = new CpuWindow(emulator);
         displayedElements.Add(cpuWindow);
         romInfoWindow = new RomInfoWindow();
         displayedElements.Add(romInfoWindow);
+        
+        audioSpec = new SDL.SDL_AudioSpec
+        {
+            format = SDL.AUDIO_F32,
+            channels = 1,
+            freq = SampleRate,
+            samples = BufferSize,
+            callback = audioCallback,
+        };
+        
+        this.emulator.SetSampleFrequency(SampleRate);
+        SDL.SDL_OpenAudio(ref audioSpec, out audioSpec).ThrowOnError();
+        SDL.SDL_PauseAudio(0);
     }
 
     public void Initialize()
@@ -34,6 +55,29 @@ public class Application
         displayedElements.Add(new PpuWindow(emulator.Ppu));
         displayedElements.Add(new PaletteWindow(emulator.Ppu));
     }
+
+    private void UpdateAudio(IntPtr userdata, IntPtr stream, int len)
+    {
+        if (!cpuWindow.Running)
+            return;
+        var sw = Stopwatch.StartNew();
+
+        var sampleCount = audioSpec.samples;
+        
+        var data = new float[sampleCount];
+        for (int i = 0; i < sampleCount; i++)
+        {
+            bool audioReady;
+            do
+            {
+                (_, audioReady) = emulator.Step();
+            } while (!audioReady);
+        }
+        Marshal.Copy(data, 0, stream, sampleCount);
+        sw.Stop();
+    }
+    
+    
     
     public void NewFrame()
     {
@@ -42,9 +86,6 @@ public class Application
         {
             element.NewFrame();
         }
-        
-        if (showAudioTester)
-            audioTester.NewFrame();
     }
 
     private Dictionary<SDL.SDL_Keycode, Joypad.Button> keymap = new()
@@ -58,6 +99,10 @@ public class Application
         { SDL.SDL_Keycode.SDLK_a, Joypad.Button.ButtonA },
         { SDL.SDL_Keycode.SDLK_s, Joypad.Button.ButtonB },
     };
+
+    private CpuWindow cpuWindow;
+    private SDL.SDL_AudioSpec audioSpec;
+
 
     public void HandleSdlEvent(in SDL.SDL_Event sdlEvent)
     {
@@ -111,11 +156,11 @@ public class Application
                     LoadSnake();
                 ImGui.EndMenu();
             }
-            if (ImGui.BeginMenu("Windows"))
-            {
-                ImGui.MenuItem("Audio Test", null, ref showAudioTester);
-                ImGui.EndMenu();
-            }
+            // if (ImGui.BeginMenu("Windows"))
+            // {
+            //     ImGui.MenuItem("Audio Test", null, ref showAudioTester);
+            //     ImGui.EndMenu();
+            // }
             
             ImGui.EndMainMenuBar();
         }
@@ -143,5 +188,21 @@ public class Application
         emulator.LoadRom(rom);
         
         chrRomWindow?.UpdateRom(rom);
+    }
+
+    private void ReleaseUnmanagedResources()
+    {
+        SDL.SDL_CloseAudio();
+    }
+
+    public void Dispose()
+    {
+        ReleaseUnmanagedResources();
+        GC.SuppressFinalize(this);
+    }
+
+    ~Application()
+    {
+        ReleaseUnmanagedResources();
     }
 }

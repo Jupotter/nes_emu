@@ -16,7 +16,7 @@ public class NestTestRunner
     [Test]
     public void TestTraceFormat()
     {
-        var bus = new NesBus(LoadNestTestRom(), new Ppu());
+        var bus = new NesBus(LoadNestTestRom(), new Ppu(), new Apu());
         bus.MemWrite(100, 0xa2);
         bus.MemWrite(101, 0x01);
         bus.MemWrite(102, 0xca);
@@ -42,7 +42,7 @@ public class NestTestRunner
     [Test]
     public void TestFormatMemAccess()
     {
-        var bus = new NesBus(LoadNestTestRom(), new Ppu());
+        var bus = new NesBus(LoadNestTestRom(), new Ppu(), new Apu());
         // ORA ($33), Y
         bus.MemWrite(100, 0x11);
         bus.MemWrite(101, 0x33);

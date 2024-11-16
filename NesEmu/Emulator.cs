@@ -2,17 +2,23 @@ namespace NesEmu;
 
 public class Emulator
 {
-    public Ppu Ppu;
+    private const double CpuClockPerSecond = 1_789_773.0;
+    
+    public Ppu Ppu { get; } = new();
     public IBus Bus { get; }
     public Cpu Cpu { get; }
+    public Apu Apu { get; } = new();
     public Rom Rom { get; private set; }
     
     public Joypad Joypad1 { get; } = new Joypad();
     public Joypad Joypad2 { get; } = new Joypad();
 
     public int Cycles { get; private set; } = 7;
+    
+    public double AudioTimePerSystemSample { get; private set; }
+    public double AudioTimePerNesClock { get; private set; }
+    public double AudioTime { get; private set; }
 
-    private bool running = false;
     
     public static Emulator Initialize()
     {
@@ -21,18 +27,15 @@ public class Emulator
 
     private Emulator()
     {
-        var ppu = new Ppu();
-        var bus = new NesBus(Rom.Empty, ppu);
-        var cpu = new Cpu(bus);
-        Ppu = ppu;
-        Cpu = cpu;
+        var bus = new NesBus(Rom.Empty, Ppu, Apu);
+        Cpu = new Cpu(bus);
         Bus = bus;
         Rom = Rom.Empty;
 
         bus.Joypad1 = Joypad1;
         bus.Joypad2 = Joypad2;
         
-        ppu.GenerateNmi += InterruptCpuHandler;
+        Ppu.GenerateNmi += InterruptCpuHandler;
     }
 
     public void LoadRom(Rom rom)
@@ -42,6 +45,12 @@ public class Emulator
         Reset();
     }
 
+    public void SetSampleFrequency(int sampleRate)
+    {
+        AudioTimePerSystemSample = 1.0 / sampleRate;
+        AudioTimePerNesClock = 1.0 / CpuClockPerSecond;
+    }
+    
     public string GetTrace()
     {
         var cpuStatus = Cpu.GetTrace();
@@ -57,18 +66,29 @@ public class Emulator
         RunCycles(7);
     }
     
-    public bool Step()
+    public (bool brk, bool audioReady)  Step()
     {
         var (brk, cycles) = Cpu.Step();
 
+
         RunCycles(cycles);
+
+        var audioReady = false;
+        AudioTime += AudioTimePerNesClock*cycles;
+        if (AudioTime >= AudioTimePerSystemSample)
+        {
+            AudioTime -= AudioTimePerSystemSample;
+            // Get audio 
+            audioReady = true;
+        }
         
-        return brk;
+        return (brk, audioReady);
     }
 
     private void RunCycles(int cycles)
     {
         Ppu.Steps(cycles*3);
+        Apu.Steps(cycles);
         Cycles += cycles;
     }
 
@@ -76,5 +96,10 @@ public class Emulator
     {
         Cpu.InterruptNmi();
         RunCycles(2);
+    }
+
+    public double GetAudioSample()
+    {
+        return Apu.GetCombinedAudioSample();
     }
 }
